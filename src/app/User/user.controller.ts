@@ -11,10 +11,11 @@ import {
 } from "../utils/generateTokens/generateTokens";
 import { AppError } from "../error/appError";
 
+//----------------------------- regitration -------------------------------------------------
 const regestrationUser = catchAsyncHandeller(
   async (req: Request, res: Response, next: NextFunction) => {
     const body = req.body;
-    //
+    
     // Register user into DB
     const user = await userServices.registerUserIntoDb(body);
 
@@ -49,6 +50,10 @@ const regestrationUser = catchAsyncHandeller(
 
   }
 );
+
+
+
+//----------------------------------------login user-----------------------------------
 const loginUser = catchAsyncHandeller(
   async (req: Request, res: Response, next: NextFunction) => {
     const { email, password } = req.body;
@@ -93,7 +98,78 @@ const loginUser = catchAsyncHandeller(
   }
 );
 
+
+//---------------------------------find single user------------------------------------------
+
+const getSingleUser = catchAsyncHandeller(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+    const user = await userServices.findUserById(id);
+
+    res.status(200).json({
+      success: true,
+      message: "User fetched successfully",
+      data: user,
+    });
+  }
+);
+
+
+// ------------------------------ find all user------------------------------------------------
+
+const getAllUsers = catchAsyncHandeller(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const users = await userServices.getAllUsers();
+
+    res.status(200).json({
+      success: true,
+      message: "All users fetched successfully",
+      data: users,
+    });
+  }
+);
+
+
+// -------------------------------delete user--------------------------------------------------
+const deleteUser = catchAsyncHandeller(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+
+    const deletedUser = await userServices.deleteUserById(id);
+
+    res.status(200).json({
+      success: true,
+      message: "User deleted successfully",
+      data: deletedUser,
+    });
+  }
+);
+
+
+//------------------------------- update user--------------------------------------------------
+const updateUser = catchAsyncHandeller(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+    const updatedData = req.body;
+
+    const updatedUser = await userServices.updateUserById(id, updatedData);
+
+    res.status(200).json({
+      success: true,
+      message: "User updated successfully",
+      data: updatedUser,
+    });
+  }
+);
+
+
+
+
 export const userController = {
   regestrationUser,
   loginUser,
+  getSingleUser,
+  getAllUsers,
+  deleteUser,
+  updateUser,
 };
