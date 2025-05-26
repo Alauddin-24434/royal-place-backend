@@ -1,5 +1,10 @@
-import express, { Application, NextFunction, Request, Response } from "express";
+import express, { Application, NextFunction, Request,  Response } from "express";
 import cors from "cors";
+
+import { userRoute } from "./app/User/user.route";
+import { AppError } from "./app/error/appError";
+import { request } from "node:https";
+import { envVariable } from "./app/config";
 
 const app: Application = express();
 
@@ -13,6 +18,7 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
+app.use('/api', userRoute)
 
 app.use((req: Request, res: Response,next:NextFunction) => {
   res.status(404).json({
@@ -20,5 +26,24 @@ app.use((req: Request, res: Response,next:NextFunction) => {
     message: "Not Found",
   });
 });
+
+
+app.use((err:AppError, req:Request, res:Response, next:NextFunction)=>{
+  let statusCode= err.statusCode || 500;
+  let message= err.message || "Something went wrong!"
+
+
+
+  res.status(statusCode).json({
+    success:false,
+    statusCode,
+    message,
+    stack: envVariable.ENV=== "development" ? err.stack : undefined,
+    
+    
+  })
+
+})
+
 
 export default app;

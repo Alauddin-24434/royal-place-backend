@@ -1,5 +1,8 @@
-import { Schema,  model } from "mongoose";
+import { Schema, model } from "mongoose";
 import { IUser, UserRole } from "./user.interface";
+import bcrypt from "bcryptjs";
+
+const saltRounds = 12; 
 
 const userSchema = new Schema<IUser>(
   {
@@ -32,6 +35,19 @@ const userSchema = new Schema<IUser>(
     timestamps: true,
   }
 );
+
+// Password hashing middleware
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
+
+  try {
+    const hashed = await bcrypt.hash(this.password, saltRounds);
+    this.password = hashed;
+    next();
+  } catch (error:any) {
+    next(error);
+  }
+});
 
 const UserModel = model<IUser>("User", userSchema);
 

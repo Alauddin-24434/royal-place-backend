@@ -13,7 +13,7 @@ export interface IBooking extends Document {
   checkInDate: Date;
   checkOutDate: Date;
   status: BookingStatus;
-  paymentId?: Types.ObjectId;  // Payment এর রেফারেন্স
+  paymentId?: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
