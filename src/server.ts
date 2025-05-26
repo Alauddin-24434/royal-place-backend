@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
-import { envVariable } from "./config";
+import { envVariable } from "./app/config";
 import app from "./app";
-import { logger } from "./utils/logger";
+import { logger } from "./app/utils/logger";
 
 async function server() {
   try {
