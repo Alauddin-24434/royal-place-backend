@@ -1,18 +1,20 @@
 import mongoose from "mongoose";
 import { envVariable } from "./config";
 import app from "./app";
+import { logger } from "./utils/logger";
 
 async function server() {
   try {
     await mongoose.connect(envVariable.DB_URL as string);
-    console.log("🛢 Database connected");
+    logger.info("🛢 Database connected");
 
     app.listen(envVariable.PORT, () => {
-      console.log(`🚀 Hotel booking app listening on port ${envVariable.PORT}`);
+      logger.info(`🚀 Hotel booking app listening on port ${envVariable.PORT}`);
     });
   } catch (error) {
-    console.error("❌ Failed to connect to database:", error);
+    logger.error("❌ Failed to connect to database", error);
+    process.exit(1)
   }
 }
 
-server()
+server();
