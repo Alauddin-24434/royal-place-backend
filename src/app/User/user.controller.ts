@@ -58,7 +58,7 @@ const loginUser = catchAsyncHandeller(
   async (req: Request, res: Response, next: NextFunction) => {
     const { email, password } = req.body;
 
-    // 1. Check if user exists
+    //  Check if user exists
     const user = await userServices.loginUserByEmail(email);
 
     if (!user) {
@@ -66,19 +66,19 @@ const loginUser = catchAsyncHandeller(
       throw new AppError("Invalid email or password", 401);
     }
 
-    // 2. Compare passwords
+    //  Compare passwords
     const isPasswordMatched = await bcrypt.compare(password, user.password);
     if (!isPasswordMatched) {
       logger.warn("⚠️ Login failed: Incorrect password");
       throw new AppError("Invalid email or password", 401);
     }
 
-    // 3. Create tokens
+    // Create tokens
     const payload = { _id: user.id, role: user.role };
     const accessToken = createAccessToken(payload);
     const refreshToken = createRefreshToken(payload);
 
-    // 4. Set refresh token in secure cookie
+    //  Set refresh token in secure cookie
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: envVariable.ENV === "production",
@@ -86,7 +86,7 @@ const loginUser = catchAsyncHandeller(
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
-    // 5. Send response
+    //  Send response
     res.status(200).json({
       success: true,
       message: "Login successful",

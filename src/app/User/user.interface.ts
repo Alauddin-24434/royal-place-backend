@@ -12,6 +12,7 @@ export interface IUser extends Document {
   email: string;
   password: string; // hashed password
   role: UserRole;
+  isDeleted:boolean;
   createdAt: Date;
   updatedAt: Date;
   phone?: string;

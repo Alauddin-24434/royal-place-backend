@@ -22,7 +22,6 @@ const registerUserIntoDb = async (body: IUser) => {
   return newUser;
 };
 
-
 //-------------------------find user by email------------------------------
 const loginUserByEmail = async (email: string) => {
   const isUserExist = await UserModel.findOne({ email });
@@ -46,53 +45,56 @@ const findUserById = async (id: string) => {
   return user;
 };
 
-
-
 //--------------- find all user only access admin & receptponoist---------------------------
-
 
 const getAllUsers = async () => {
   const users = await UserModel.find().sort({ createdAt: -1 }); // latest first
   return users;
 };
 
-// -----------------------delete user by id-------------------------------------------
-
-
+//---------------------- delete user by id (Soft Delete) ---------------------------
 const deleteUserById = async (id: string) => {
-  const deletedUser = await UserModel.findByIdAndDelete(id);
+  //  Find the user by ID
+  const user = await UserModel.findById(id);
 
-  if (!deletedUser) {
+  //  If user doesn't exist
+  if (!user) {
     throw new AppError("Failed to delete user. User not found!", 404);
   }
 
-  return deletedUser;
+  // Soft delete: set isDeleted = true
+  user.isDeleted = true;
+
+  await user.save();
+
+  return user;
 };
 
-
 // -----------------------------------update user by id--------------------------------------
-
 const updateUserById = async (id: string, updateData: Partial<IUser>) => {
-  const updatedUser = await UserModel.findByIdAndUpdate(id, updateData, {
-    new: true,
-    runValidators: true,
-  });
+  // Only update if the user exists and is not soft deleted
+  const updatedUser = await UserModel.findOneAndUpdate(
+    { _id: id, isDeleted: false }, // 👈 condition added here
+    updateData,
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
 
   if (!updatedUser) {
-    throw new AppError("User not found!", 404);
+    throw new AppError("User not found or has been deleted!", 404);
   }
 
   return updatedUser;
 };
 
 
-
-
-export const userServices ={
-    registerUserIntoDb,
-    loginUserByEmail,
-    findUserById,
-    getAllUsers,
-    deleteUserById,
-    updateUserById,
-}
+export const userServices = {
+  registerUserIntoDb,
+  loginUserByEmail,
+  findUserById,
+  getAllUsers,
+  deleteUserById,
+  updateUserById,
+};

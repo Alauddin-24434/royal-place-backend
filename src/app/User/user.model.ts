@@ -2,7 +2,7 @@ import { Schema, model } from "mongoose";
 import { IUser, UserRole } from "./user.interface";
 import bcrypt from "bcryptjs";
 
-const saltRounds = 12; 
+const saltRounds = 12;
 
 const userSchema = new Schema<IUser>(
   {
@@ -26,6 +26,10 @@ const userSchema = new Schema<IUser>(
       enum: Object.values(UserRole),
       default: UserRole.User,
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
     phone: {
       type: String,
       required: false,
@@ -44,7 +48,7 @@ userSchema.pre("save", async function (next) {
     const hashed = await bcrypt.hash(this.password, saltRounds);
     this.password = hashed;
     next();
-  } catch (error:any) {
+  } catch (error: any) {
     next(error);
   }
 });
