@@ -5,6 +5,7 @@ import { userRoute } from "./app/User/user.route";
 import { AppError } from "./app/error/appError";
 import { request } from "node:https";
 import { envVariable } from "./app/config";
+import { roomRoute } from "./app/Room/room.route";
 
 const app: Application = express();
 
@@ -18,7 +19,8 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
-app.use('/api', userRoute)
+app.use('/api', userRoute);
+app.use('/api',roomRoute);
 
 app.use((req: Request, res: Response,next:NextFunction) => {
   res.status(404).json({
