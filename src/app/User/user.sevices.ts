@@ -1,8 +1,9 @@
 import { AppError } from "../error/appError";
 import { IUser } from "./user.interface";
 import UserModel from "./user.model";
-
+import jwt from "jsonwebtoken";
 import { logger } from "../utils/logger";
+import { envVariable } from "../config";
 
 //------------------- regitration ----------------------------------------
 
@@ -89,6 +90,25 @@ const updateUserById = async (id: string, updateData: Partial<IUser>) => {
   return updatedUser;
 };
 
+//----------------------- handle refresh token -----------------------------------
+
+export const handleRefreshToken = async (refreshToken: string) => {
+  const decoded = jwt.verify(refreshToken, envVariable.JWT_REFRESH_TOKEN_SECRET) as { id: string };
+
+  const user = await UserModel.findById(decoded.id);
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
+
+  const newAccessToken = jwt.sign(
+    { id: user._id, role: user.role },
+    envVariable.JWT_ACCESS_TOKEN_SECRET,
+    { expiresIn: "1h" }
+  );
+
+  return newAccessToken;
+};
+
 
 export const userServices = {
   registerUserIntoDb,
@@ -97,4 +117,7 @@ export const userServices = {
   getAllUsers,
   deleteUserById,
   updateUserById,
+  handleRefreshToken,
 };
+
+

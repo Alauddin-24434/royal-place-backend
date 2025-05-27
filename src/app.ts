@@ -1,9 +1,9 @@
 import express, { Application, NextFunction, Request,  Response } from "express";
 import cors from "cors";
-
+import cookieParser from "cookie-parser";
 import { userRoute } from "./app/User/user.route";
 import { AppError } from "./app/error/appError";
-import { request } from "node:https";
+
 import { envVariable } from "./app/config";
 import { roomRoute } from "./app/Room/room.route";
 
@@ -11,6 +11,7 @@ const app: Application = express();
 
 app.use(express.json());
 app.use(cors());
+app.use(cookieParser())
 
 app.get("/", (req: Request, res: Response) => {
   res.status(200).json({
@@ -18,6 +19,17 @@ app.get("/", (req: Request, res: Response) => {
     message: "Database connected",
   });
 });
+
+//refresh token route and veryfy and accestoken
+
+app.post("/api/refresh-token", (req: Request, res: Response) => { 
+  res.status(200).json({
+    success: true,
+    message: "Refresh token route",
+  });
+});
+
+
 
 app.use('/api', userRoute);
 app.use('/api',roomRoute);
@@ -28,6 +40,8 @@ app.use((req: Request, res: Response,next:NextFunction) => {
     message: "Not Found",
   });
 });
+
+
 
 
 app.use((err:AppError, req:Request, res:Response, next:NextFunction)=>{

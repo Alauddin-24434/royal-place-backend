@@ -1,19 +1,24 @@
 import { Router } from "express";
 import { userController } from "./user.controller";
-// import { auth } from "../middlewares/auth"; // future: authentication middleware
-// import { checkRole } from "../middlewares/checkRole"; // future: role-based access control
+import { checkRole } from "../utils/checkRole";
+import { authenticateUser } from "../middleware/authenticateUser";
+
 
 const router = Router();
 
 // 👉 Register user
 router.post("/register", userController.regestrationUser);
 
+
 // 👉 Login user
 router.post("/login", userController.loginUser);
 
+// refresh token route
+router.post("/refresh-token", userController.refreshAccessToken);
+
 // 👉 Get all users (accessible by admin & receptionist)
-// router.get("/", auth, checkRole(["admin", "receptionist"]), userController.getAllUsers);
-router.get("/users", userController.getAllUsers); // temporarily open
+
+router.get("/users", authenticateUser, checkRole('admin','receptionist'), userController.getAllUsers); 
 
 // 👉 Get single user by ID
 router.get("/user/:id", userController.getSingleUser);

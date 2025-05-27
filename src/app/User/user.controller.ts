@@ -10,16 +10,17 @@ import {
   createRefreshToken,
 } from "../utils/generateTokens/generateTokens";
 import { AppError } from "../error/appError";
+import { log } from "console";
 
 //----------------------------- regitration -------------------------------------------------
 const regestrationUser = catchAsyncHandeller(
   async (req: Request, res: Response, next: NextFunction) => {
     const body = req.body;
-    
+
     // Register user into DB
     const user = await userServices.registerUserIntoDb(body);
 
-    const payload = { _id: user.id, role: user.role };
+    const payload = { id: user._id, role: user.role };
 
     // accessToken
     const accessToken = createAccessToken(payload);
@@ -27,31 +28,26 @@ const regestrationUser = catchAsyncHandeller(
     //refresstoken
     const refresstoken = createRefreshToken(payload);
 
-
-
     //  Set refresh token in secure HttpOnly cookie
-    res.cookie("refreshToken", refresstoken,{
-        httpOnly:true,
-        secure: envVariable.ENV==="production",
-        sameSite:"strict",
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    })
+    res.cookie("refreshToken", refresstoken, {
+      httpOnly: true,
+      secure: envVariable.ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
 
     // send response
 
     res.status(201).json({
-        success:true,
-        message:"User registered successfully",
-        data: {
-            accessToken,
-            user,
-        }
-    })
-
+      success: true,
+      message: "User registered successfully",
+      data: {
+        accessToken,
+        user,
+      },
+    });
   }
 );
-
-
 
 //----------------------------------------login user-----------------------------------
 const loginUser = catchAsyncHandeller(
@@ -74,7 +70,7 @@ const loginUser = catchAsyncHandeller(
     }
 
     // Create tokens
-    const payload = { _id: user.id, role: user.role };
+    const payload = { id: user._id, role: user.role };
     const accessToken = createAccessToken(payload);
     const refreshToken = createRefreshToken(payload);
 
@@ -98,7 +94,6 @@ const loginUser = catchAsyncHandeller(
   }
 );
 
-
 //---------------------------------find single user------------------------------------------
 
 const getSingleUser = catchAsyncHandeller(
@@ -114,12 +109,16 @@ const getSingleUser = catchAsyncHandeller(
   }
 );
 
-
 // ------------------------------ find all user------------------------------------------------
 
 const getAllUsers = catchAsyncHandeller(
   async (req: Request, res: Response, next: NextFunction) => {
+  
+   
+   
+
     const users = await userServices.getAllUsers();
+    logger.info("All users fetched successfully");
 
     res.status(200).json({
       success: true,
@@ -128,7 +127,6 @@ const getAllUsers = catchAsyncHandeller(
     });
   }
 );
-
 
 // -------------------------------delete user--------------------------------------------------
 const deleteUser = catchAsyncHandeller(
@@ -144,7 +142,6 @@ const deleteUser = catchAsyncHandeller(
     });
   }
 );
-
 
 //------------------------------- update user--------------------------------------------------
 const updateUser = catchAsyncHandeller(
@@ -162,7 +159,26 @@ const updateUser = catchAsyncHandeller(
   }
 );
 
+// -------------------------------refresh token ----------------------------------------
 
+
+export const refreshAccessToken = catchAsyncHandeller(
+  async (req: Request, res: Response) => {
+    const refreshToken =
+      req.cookies?.refreshToken || req.headers["x-refresh-token"];
+
+    if (!refreshToken) {
+      throw new AppError("Refresh token missing", 401);
+    }
+
+    const accessToken = await userServices.handleRefreshToken(refreshToken);
+
+    res.status(200).json({
+      success: true,
+      accessToken,
+    });
+  }
+);
 
 
 export const userController = {
@@ -172,4 +188,5 @@ export const userController = {
   getAllUsers,
   deleteUser,
   updateUser,
+  refreshAccessToken
 };
