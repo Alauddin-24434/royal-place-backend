@@ -2,9 +2,10 @@
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
 import { AppError } from "../error/appError";
-import UserModel from "../User/user.model";
+
 import { envVariable } from "../config";
 import { logger } from "../utils/logger";
+import UserModel from "../modules/User/user.model";
 
 /**
  * Middleware to authenticate user using access token.

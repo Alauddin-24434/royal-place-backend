@@ -1,6 +1,7 @@
-import { AppError } from "../error/appError";
+
 import RoomModel from "./room.model";
 import { Iroom } from "./room.interface";
+import { AppError } from "../../error/appError";
 
 //--------------------------------- Create new room------------------------------
 const createRoom = async (roomData: Iroom) => {

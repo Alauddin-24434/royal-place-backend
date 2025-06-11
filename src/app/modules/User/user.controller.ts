@@ -1,16 +1,14 @@
 import { NextFunction, Request, Response } from "express";
-import { catchAsyncHandeller } from "../utils/catchAsyncHandeller";
+
 import bcrypt from "bcryptjs";
 
-import { envVariable } from "../config";
+
+import { catchAsyncHandeller } from "../../utils/catchAsyncHandeller";
 import { userServices } from "./user.sevices";
-import { logger } from "../utils/logger";
-import {
-  createAccessToken,
-  createRefreshToken,
-} from "../utils/generateTokens/generateTokens";
-import { AppError } from "../error/appError";
-import { log } from "console";
+import { createAccessToken, createRefreshToken } from "../../utils/generateTokens/generateTokens";
+import { envVariable } from "../../config";
+import { logger } from "../../utils/logger";
+import { AppError } from "../../error/appError";
 
 //----------------------------- regitration -------------------------------------------------
 const regestrationUser = catchAsyncHandeller(

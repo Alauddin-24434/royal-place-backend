@@ -1,11 +1,12 @@
 import express, { Application, NextFunction, Request,  Response } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { userRoute } from "./app/User/user.route";
+
 import { AppError } from "./app/error/appError";
 
 import { envVariable } from "./app/config";
-import { roomRoute } from "./app/Room/room.route";
+import { userRoute } from "./app/modules/User/user.route";
+import { roomRoute } from "./app/modules/Room/room.route";
 
 const app: Application = express();
 

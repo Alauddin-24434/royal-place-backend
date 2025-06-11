@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import { catchAsyncHandeller } from "../utils/catchAsyncHandeller";
+
 import { roomService } from "./room.services";
+import { catchAsyncHandeller } from "../../utils/catchAsyncHandeller";
 
 // ---------------------------Create Room-------------------------------
 const createRoom = catchAsyncHandeller(async (req: Request, res: Response) => {

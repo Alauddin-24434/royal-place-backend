@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { userController } from "./user.controller";
-import { checkRole } from "../utils/checkRole";
-import { authenticateUser } from "../middleware/authenticateUser";
+import { authenticateUser } from "../../middleware/authenticateUser";
+import { checkRole } from "../../utils/checkRole";
 
 
 const router = Router();

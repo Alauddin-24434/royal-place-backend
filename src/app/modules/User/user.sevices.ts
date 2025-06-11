@@ -1,9 +1,12 @@
-import { AppError } from "../error/appError";
+
+import { envVariable } from "../../config";
+import { AppError } from "../../error/appError";
+import { logger } from "../../utils/logger";
 import { IUser } from "./user.interface";
-import UserModel from "./user.model";
+
 import jwt from "jsonwebtoken";
-import { logger } from "../utils/logger";
-import { envVariable } from "../config";
+import UserModel from "./user.model";
+
 
 //------------------- regitration ----------------------------------------
 
