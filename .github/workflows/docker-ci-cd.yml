@@ -42,7 +42,12 @@ jobs:
       - name: Install Render CLI
         run: |
           curl -fsSL https://cdn.render.com/cli/install.sh | bash
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          echo "$HOME/.render/bin" >> $GITHUB_PATH
+          export PATH="$HOME/.render/bin:$PATH"
+          render --version
+
+      - name: Verify Render CLI
+        run: render --version
 
       - name: Deploy to Render
         env:
