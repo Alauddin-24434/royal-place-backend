@@ -39,6 +39,9 @@ jobs:
           docker-compose build
           docker-compose push
 
+      - name: Test connectivity to Render CDN
+        run: curl -I https://cdn.render.com/cli/install.sh
+
       - name: Install Render CLI
         run: |
           curl -fsSL https://cdn.render.com/cli/install.sh | bash
