@@ -5,7 +5,20 @@ import { catchAsyncHandeller } from "../../utils/catchAsyncHandeller";
 
 // ---------------------------Create Room-------------------------------
 const createRoom = catchAsyncHandeller(async (req: Request, res: Response) => {
-  const newRoom = await roomService.createRoom(req.body);
+
+
+  // Handle file uploads if 
+   const files= req.files as Express.Multer.File[];
+   const images= files ? files.map(file=> file.path):[];
+
+  
+  // Prepare room data
+const roomData={
+   ...req.body,
+   images:images,
+}
+
+  const newRoom = await roomService.createRoom(roomData);
   res.status(201).json({
     success: true,
     message: "Room created successfully",
