@@ -7,6 +7,7 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
     env:
       DB_URL: ${{ secrets.DB_URL }}
 
@@ -41,10 +42,11 @@ jobs:
       - name: Install Render CLI
         run: |
           curl -fsSL https://cdn.render.com/cli/install.sh | bash
+          export PATH="$HOME/.render:$PATH"
 
       - name: Deploy to Render
         env:
           RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
         run: |
-          render deploy service $RENDER_SERVICE_ID --api-key $RENDER_API_KEY
+          ~/.render/render deploy service $RENDER_SERVICE_ID --api-key $RENDER_API_KEY
