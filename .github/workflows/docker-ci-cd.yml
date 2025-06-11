@@ -39,19 +39,16 @@ jobs:
           docker-compose build
           docker-compose push
 
-      - name: Download and install Render CLI
+      - name: Install Render CLI
         run: |
           curl -L https://github.com/render-oss/cli/releases/download/v1.1.0/cli_1.1.0_linux_amd64.zip -o render.zip
           unzip render.zip
           sudo mv cli_v1.1.0 /usr/local/bin/render
-          sudo chmod +x /usr/local/bin/render
-
-      - name: Verify Render CLI installation
-        run: render --version
-
-      - name: Deploy to Render
+      - name: Trigger deploy with Render CLI
         env:
-          RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+          # The CLI can authenticate via a Render API key without logging in.
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+          CI: true
         run: |
-          render deploys create $RENDER_SERVICE_ID --api-key $RENDER_API_KEY --confirm
+          render deploys create ${{ secrets.RENDER_SERVICE_ID }} --output json --confirm
