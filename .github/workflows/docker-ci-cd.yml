@@ -42,11 +42,11 @@ jobs:
       - name: Install Render CLI
         run: |
           curl -fsSL https://cdn.render.com/cli/install.sh | bash
-          echo "$HOME/.render" >> $GITHUB_PATH
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Deploy to Render
         env:
           RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
         run: |
-          ~/.render/render deploy service $RENDER_SERVICE_ID --api-key $RENDER_API_KEY
+          render deploy service $RENDER_SERVICE_ID --api-key $RENDER_API_KEY
