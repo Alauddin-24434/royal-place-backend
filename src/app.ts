@@ -7,6 +7,7 @@ import { AppError } from "./app/error/appError";
 import { envVariable } from "./app/config";
 import { userRoute } from "./app/modules/User/user.route";
 import { roomRoute } from "./app/modules/Room/room.route";
+import { amenityRoute } from "./app/modules/Amenities/amenities.route";
 
 const app: Application = express();
 
@@ -18,6 +19,12 @@ app.get("/", (req: Request, res: Response) => {
   res.status(200).json({
     success: true,
     message: "Database connected",
+  });
+});
+app.get("/check", (req: Request, res: Response) => {
+  res.status(200).json({
+    success: true,
+    message: "Database checked",
   });
 });
 
@@ -34,6 +41,7 @@ app.post("/api/refresh-token", (req: Request, res: Response) => {
 
 app.use('/api', userRoute);
 app.use('/api',roomRoute);
+app.use('/api',amenityRoute);
 
 app.use((req: Request, res: Response,next:NextFunction) => {
   res.status(404).json({
