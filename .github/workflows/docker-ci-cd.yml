@@ -39,17 +39,14 @@ jobs:
           docker-compose build
           docker-compose push
 
-      - name: Test connectivity to Render CDN
-        run: curl -I https://cdn.render.com/cli/install.sh
-
-      - name: Install Render CLI
+      - name: Download and install Render CLI
         run: |
-          curl -fsSL https://cdn.render.com/cli/install.sh | bash
-          echo "$HOME/.render/bin" >> $GITHUB_PATH
-          export PATH="$HOME/.render/bin:$PATH"
-          render --version
+          curl -L https://github.com/render-oss/cli/releases/download/v1.1.0/cli_1.1.0_linux_amd64.zip -o render.zip
+          unzip render.zip
+          sudo mv cli_v1.1.0 /usr/local/bin/render
+          sudo chmod +x /usr/local/bin/render
 
-      - name: Verify Render CLI
+      - name: Verify Render CLI installation
         run: render --version
 
       - name: Deploy to Render
@@ -57,4 +54,4 @@ jobs:
           RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
         run: |
-          render deploy service $RENDER_SERVICE_ID --api-key $RENDER_API_KEY
+          render deploys create $RENDER_SERVICE_ID --api-key $RENDER_API_KEY --confirm
