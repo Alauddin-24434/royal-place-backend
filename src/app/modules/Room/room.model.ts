@@ -6,6 +6,9 @@ const RoomSchema = new Schema<Iroom>(
   {
     roomNumber: { type: String, required: true, unique: true },
     floor: { type: Number, required: true },
+    features: { type: [String], default: [] },
+    description: { type: String, default: "" },
+    images: { type: [String], default: [] },
     type: {
       type: String,
       enum: Object.values(RoomType),
@@ -13,9 +16,9 @@ const RoomSchema = new Schema<Iroom>(
     },
     pricePerNight: { type: Number, required: true },
     isActive: { type: Boolean, default: true },
-  },
+  }, 
   {
-    timestamps: true, // createdAt, updatedAt auto managed
+    timestamps: true, 
   }
 );
 
