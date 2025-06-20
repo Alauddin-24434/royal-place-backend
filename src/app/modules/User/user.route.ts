@@ -7,7 +7,7 @@ import { checkRole } from "../../utils/checkRole";
 const router = Router();
 
 // 👉 Register user
-router.post("/register", userController.regestrationUser);
+router.post("/signup", userController.regestrationUser);
 
 
 // 👉 Login user
@@ -18,7 +18,7 @@ router.post("/refresh-token", userController.refreshAccessToken);
 
 // 👉 Get all users (accessible by admin & receptionist)
 
-router.get("/users", authenticateUser, checkRole('admin','receptionist'), userController.getAllUsers); 
+router.get("/users",  userController.getAllUsers); 
 
 // 👉 Get single user by ID
 router.get("/user/:id", userController.getSingleUser);

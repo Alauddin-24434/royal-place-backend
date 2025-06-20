@@ -1,20 +1,35 @@
-import { Schema, model, Types, Document } from "mongoose";
+import { Types } from "mongoose";
 
 export enum BookingStatus {
   Pending = "pending",
   Booked = "booked",
   Cancelled = "cancelled",
+  Failed = "failed",
 }
 
-export interface IBooking extends Document {
-  _id: Types.ObjectId;
-  userId: Types.ObjectId;
+
+
+
+
+
+export interface IBookingRooms {
   roomId: Types.ObjectId;
   checkInDate: Date;
   checkOutDate: Date;
-  status: BookingStatus;
-  paymentId?: Types.ObjectId;
-  createdAt: Date;
-  updatedAt: Date;
+  price: number;
+
 }
 
+
+export interface IBooking {
+  userId: Types.ObjectId;
+  rooms: IBookingRooms[]
+  totalAmount: number;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  bookingStatus: BookingStatus;
+  transactionId?: string;
+}

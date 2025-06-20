@@ -8,13 +8,13 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN pnpm install
 
 # Copy all source code and config files (including tsconfig.json)
 COPY . .
 
 # Build TypeScript to JavaScript (creates dist/)
-RUN npm run build
+RUN pnpm run build
 
 # Expose the port your app listens on
 EXPOSE 5000

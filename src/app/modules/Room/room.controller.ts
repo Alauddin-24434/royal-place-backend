@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 
 import { roomService } from "./room.services";
 import { catchAsyncHandeller } from "../../utils/catchAsyncHandeller";
+import { logger } from "../../utils/logger";
 
 // ---------------------------Create Room-------------------------------
 const createRoom = catchAsyncHandeller(async (req: Request, res: Response) => {
@@ -35,6 +36,17 @@ const getAllRooms = catchAsyncHandeller(async (req: Request, res: Response) => {
     data: rooms,
   });
 });
+
+// -------------------------------Filter All Rooms-----------------
+const filterAllRooms = catchAsyncHandeller(async (req: Request, res: Response) => {
+  const rooms = await roomService.filterRooms(req.query);
+  res.status(200).json({
+    success: true,
+    message: "Rooms filter successfully",
+    data: rooms,
+  });
+});
+
 
 //------------------------------- Get Single Room---------------------
 const getRoomById = catchAsyncHandeller(async (req: Request, res: Response) => {
@@ -74,4 +86,5 @@ export const roomController = {
   getRoomById,
   updateRoom,
   deleteRoom,
+  filterAllRooms
 };

@@ -1,7 +1,7 @@
 import { Types } from "mongoose";
 
 export enum UserRole {
-  User = "user",
+  User = "guest",
   Admin = "admin",
   Receptionist = "receptionist",
 }
@@ -9,6 +9,7 @@ export enum UserRole {
 export interface IUser extends Document {
   _id: Types.ObjectId;
   name: string;
+  image:null;
   email: string;
   password: string; // hashed password
   role: UserRole;

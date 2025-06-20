@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Payment Refund Center</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding-top: 40px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .header-icon {
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .header-icon svg {
+      width: 32px;
+      height: 32px;
+      color: white;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      color: #6b7280;
+      font-size: 1.1rem;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      overflow: hidden;
+    }
+
+    .card-header {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: white;
+      padding: 24px;
+    }
+
+    .card-header h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-header p {
+      color: #bfdbfe;
+      font-size: 0.95rem;
+    }
+
+    .card-content {
+      padding: 32px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+
+    @media (min-width: 768px) {
+      .form-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .form-grid.full-width {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-label {
+      font-weight: 500;
+      color: #374151;
+      font-size: 0.875rem;
+    }
+
+    .required {
+      color: #ef4444;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      color: #9ca3af;
+    }
+
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: all 0.2s;
+      background: white;
+    }
+
+    .form-input.has-icon {
+      padding-left: 40px;
+    }
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .form-input.error, .form-select.error, .form-textarea.error {
+      border-color: #ef4444;
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .error-message {
+      color: #ef4444;
+      font-size: 0.875rem;
+      margin-top: 4px;
+    }
+
+    .separator {
+      height: 1px;
+      background: #e5e7eb;
+      margin: 24px 0;
+    }
+
+    .submit-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: white;
+      border: none;
+      padding: 16px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .submit-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, #1d4ed8, #1e40af);
+      transform: translateY(-1px);
+      box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+    }
+
+    .submit-btn:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid transparent;
+      border-top: 2px solid currentColor;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .alert {
+      margin-top: 24px;
+      padding: 16px;
+      border-radius: 8px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .alert.success {
+      background: #f0fdf4;
+      border: 1px solid #22c55e;
+      color: #15803d;
+    }
+
+    .alert.error {
+      background: #fef2f2;
+      border: 1px solid #ef4444;
+      color: #dc2626;
+    }
+
+    .alert-icon {
+      width: 20px;
+      height: 20px;
+      margin-top: 2px;
+    }
+
+    .alert-content {
+      flex: 1;
+    }
+
+    .alert-title {
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .alert-message {
+      font-size: 0.875rem;
+      margin-bottom: 12px;
+    }
+
+    .badge-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      background: #f3f4f6;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .badge svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    .footer-note {
+      text-align: center;
+      margin-top: 32px;
+      color: #6b7280;
+      font-size: 0.875rem;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.3s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+        </svg>
+      </div>
+      <h1>Payment Refund Center</h1>
+      <p>Process customer refunds quickly and securely</p>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2>
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+          </svg>
+          Refund Request Form
+        </h2>
+        <p>Fill in the details below to process a payment refund</p>
+      </div>
+
+      <div class="card-content">
+        <form id="refundForm">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="transactionId">
+                Transaction ID <span class="required">*</span>
+              </label>
+              <input 
+                type="text" 
+                id="transactionId" 
+                class="form-input" 
+                placeholder="e.g., TXN_123456789"
+                required
+              />
+              <div class="error-message" id="transactionIdError"></div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="customerEmail">
+                Customer Email <span class="required">*</span>
+              </label>
+              <div class="input-wrapper">
+                <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                </svg>
+                <input 
+                  type="email" 
+                  id="customerEmail" 
+                  class="form-input has-icon" 
+                  placeholder="customer@example.com"
+                  required
+                />
+              </div>
+              <div class="error-message" id="customerEmailError"></div>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="refundAmount">
+                Refund Amount ($) <span class="required">*</span>
+              </label>
+              <div class="input-wrapper">
+                <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                </svg>
+                <input 
+                  type="number" 
+                  id="refundAmount" 
+                  class="form-input has-icon" 
+                  placeholder="0.00"
+                  step="0.01"
+                  min="0"
+                  required
+                />
+              </div>
+              <div class="error-message" id="refundAmountError"></div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="refundReason">
+                Refund Reason <span class="required">*</span>
+              </label>
+              <select id="refundReason" class="form-select" required>
+                <option value="">Select a reason</option>
+                <option value="customer-request">Customer Request</option>
+                <option value="duplicate-charge">Duplicate Charge</option>
+                <option value="product-defect">Product Defect</option>
+                <option value="service-issue">Service Issue</option>
+                <option value="billing-error">Billing Error</option>
+                <option value="fraud-prevention">Fraud Prevention</option>
+                <option value="other">Other</option>
+              </select>
+              <div class="error-message" id="refundReasonError"></div>
+            </div>
+          </div>
+
+          <div class="form-grid full-width">
+            <div class="form-group">
+              <label class="form-label" for="additionalNotes">
+                Additional Notes
+              </label>
+              <textarea 
+                id="additionalNotes" 
+                class="form-textarea" 
+                placeholder="Add any additional context or notes about this refund..."
+                rows="3"
+              ></textarea>
+            </div>
+          </div>
+
+          <div class="separator"></div>
+
+          <button type="submit" class="submit-btn" id="submitBtn">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+            </svg>
+            Process Refund
+          </button>
+        </form>
+
+        <div id="alertContainer"></div>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      <p>All refunds are processed securely and may take 3-5 business days to appear in the customer's account.</p>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('refundForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const alertContainer = document.getElementById('alertContainer');
+
+    // Form elements
+    const transactionId = document.getElementById('transactionId');
+    const customerEmail = document.getElementById('customerEmail');
+    const refundAmount = document.getElementById('refundAmount');
+    const refundReason = document.getElementById('refundReason');
+    const additionalNotes = document.getElementById('additionalNotes');
+
+    // Error elements
+    const transactionIdError = document.getElementById('transactionIdError');
+    const customerEmailError = document.getElementById('customerEmailError');
+    const refundAmountError = document.getElementById('refundAmountError');
+    const refundReasonError = document.getElementById('refundReasonError');
+
+    // Clear errors when user types
+    [transactionId, customerEmail, refundAmount, refundReason].forEach(input => {
+      input.addEventListener('input', () => {
+        clearFieldError(input);
+        clearAlert();
+      });
+    });
+
+    function clearFieldError(field) {
+      field.classList.remove('error');
+      const errorElement = document.getElementById(field.id + 'Error');
+      if (errorElement) {
+        errorElement.textContent = '';
+      }
+    }
+
+    function showFieldError(field, message) {
+      field.classList.add('error');
+      const errorElement = document.getElementById(field.id + 'Error');
+      if (errorElement) {
+        errorElement.textContent = message;
+      }
+    }
+
+    function validateForm() {
+      let isValid = true;
+
+      // Clear all errors first
+      [transactionId, customerEmail, refundAmount, refundReason].forEach(clearFieldError);
+
+      // Validate transaction ID
+      if (!transactionId.value.trim()) {
+        showFieldError(transactionId, 'Transaction ID is required');
+        isValid = false;
+      }
+
+      // Validate email
+      if (!customerEmail.value.trim()) {
+        showFieldError(customerEmail, 'Customer email is required');
+        isValid = false;
+      } else if (!/\S+@\S+\.\S+/.test(customerEmail.value)) {
+        showFieldError(customerEmail, 'Please enter a valid email address');
+        isValid = false;
+      }
+
+      // Validate amount
+      if (!refundAmount.value.trim()) {
+        showFieldError(refundAmount, 'Refund amount is required');
+        isValid = false;
+      } else if (isNaN(refundAmount.value) || parseFloat(refundAmount.value) <= 0) {
+        showFieldError(refundAmount, 'Please enter a valid amount');
+        isValid = false;
+      }
+
+      // Validate reason
+      if (!refundReason.value) {
+        showFieldError(refundReason, 'Please select a refund reason');
+        isValid = false;
+      }
+
+      return isValid;
+    }
+
+    function setLoading(loading) {
+      submitBtn.disabled = loading;
+      if (loading) {
+        submitBtn.innerHTML = `
+          <div class="spinner"></div>
+          Processing Refund...
+        `;
+      } else {
+        submitBtn.innerHTML = `
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+          </svg>
+          Process Refund
+        `;
+      }
+    }
+
+    function clearAlert() {
+      alertContainer.innerHTML = '';
+    }
+
+    function showAlert(type, title, message, data = null) {
+      const iconSvg = type === 'success' 
+        ? `<svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+           </svg>`
+        : `<svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z"></path>
+           </svg>`;
+
+      let badgesHtml = '';
+      if (data && type === 'success') {
+        badgesHtml = `
+          <div class="badge-container">
+            ${data.refundId ? `
+              <div class="badge">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                ID: ${data.refundId}
+              </div>
+            ` : ''}
+            ${data.amount ? `
+              <div class="badge">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                </svg>
+                $${data.amount}
+              </div>
+            ` : ''}
+            ${data.status ? `
+              <div class="badge">
+                Status: ${data.status}
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }
+
+      const processedTime = data && data.processedAt 
+        ? `<p style="font-size: 0.75rem; margin-top: 8px; opacity: 0.8;">
+             Processed at: ${new Date(data.processedAt).toLocaleString()}
+           </p>`
+        : '';
+
+      alertContainer.innerHTML = `
+        <div class="alert ${type} fade-in">
+          ${iconSvg}
+          <div class="alert-content">
+            <div class="alert-title">${title}</div>
+            <div class="alert-message">${message}</div>
+            ${badgesHtml}
+            ${processedTime}
+          </div>
+        </div>
+      `;
+    }
+
+    function formatReason(reason) {
+      return reason.split('-').map(word => 
+        word.charAt(0).toUpperCase() + word.slice(1)
+      ).join(' ');
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      if (!validateForm()) {
+        return;
+      }
+
+      setLoading(true);
+      clearAlert();
+
+      const formData = {
+        transactionId: transactionId.value.trim(),
+        customerEmail: customerEmail.value.trim(),
+        refundAmount: refundAmount.value.trim(),
+        refundReason: refundReason.value,
+        additionalNotes: additionalNotes.value.trim()
+      };
+
+      try {
+        const response = await fetch('http://localhost:5000/api/payment/refund', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          showAlert(
+            'success',
+            'Refund Processed Successfully!',
+            `Refund of $${parseFloat(formData.refundAmount).toFixed(2)} has been processed successfully. The customer will receive an email confirmation shortly.`,
+            data
+          );
+
+          // Reset form
+          form.reset();
+        } else {
+          showAlert(
+            'error',
+            'Refund Failed',
+            data.message || 'An error occurred while processing the refund. Please try again.'
+          );
+        }
+      } catch (error) {
+        showAlert(
+          'error',
+          'Network Error',
+          'Unable to connect to the server. Please check your connection and try again.'
+        );
+      } finally {
+        setLoading(false);
+      }
+    });
+  </script>
+</body>
+</html>

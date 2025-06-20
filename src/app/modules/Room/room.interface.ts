@@ -1,4 +1,3 @@
-import { Types } from "mongoose";
 
 export enum RoomType {
   Luxury = "luxury",
@@ -7,15 +6,36 @@ export enum RoomType {
   Twin = "twin",
 }
 
-export interface Iroom {
+export enum RoomStatus {
+  Active = "active",
+  Maintenance = "maintenance",
+  Inactive = "inactive",
+
+}
+
+enum BedType {
+  King = "king",
+  Queen = "queen",
+  Twin = "twin",
+  Double = "double",
+  Single = "single",
+}
+
+
+
+export interface IRoom {
+
   roomNumber: string;
-  images?: string[]; 
   floor: number;
+  title?: string;
+  images?: string[];
+  features: string[];
   description?: string;
   type: RoomType;
-  features: string[];
-  pricePerNight: number;
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  price?: number;
+  adults?: number;
+  children: number;
+  bedType: BedType;
+  bedCount: number;
+  roomStatus: RoomStatus;
 }
