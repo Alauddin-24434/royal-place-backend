@@ -1,15 +1,15 @@
-import {  Types, Document } from "mongoose";
-
+import {  Types } from "mongoose";
 export enum PaymentStatus {
   Pending = "pending",
   Completed = "completed",
   Failed = "failed",
-  Cancelled = "cancelled",
   Refunded = "refunded",
+  Cancel="cancled"
 }
 
-export interface IPayment extends Document {
-  _id: Types.ObjectId;
+
+export interface IPayment  {
+  userId: Types.ObjectId;
   bookingId: Types.ObjectId;
   amount: number;
   paymentMethod: string;

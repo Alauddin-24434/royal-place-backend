@@ -23,8 +23,8 @@ const userSchema = new Schema<IUser>(
     },
     role: {
       type: String,
-      enum: Object.values(UserRole),
-      default: UserRole.User,
+      enum: ['guest', 'admin', 'receptionist'],
+      required: [true, "Role is required"],
     },
     isDeleted: {
       type: Boolean,

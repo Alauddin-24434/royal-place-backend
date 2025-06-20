@@ -5,11 +5,10 @@ import { logger } from "../../utils/logger";
 import { IUser } from "./user.interface";
 
 import jwt from "jsonwebtoken";
-import UserModel from "./user.model";
+import UserModel from "./user.schema";
 
 
-//------------------- regitration ----------------------------------------
-
+//======================================================== Regitration ===================================================================
 const registerUserIntoDb = async (body: IUser) => {
   // Check if user already exists by email
   const isUserExist = await UserModel.findOne({ email: body.email });
@@ -26,7 +25,7 @@ const registerUserIntoDb = async (body: IUser) => {
   return newUser;
 };
 
-//-------------------------find user by email------------------------------
+// ============================================login user==============================================
 const loginUserByEmail = async (email: string) => {
   const isUserExist = await UserModel.findOne({ email });
 
@@ -37,7 +36,7 @@ const loginUserByEmail = async (email: string) => {
   return isUserExist;
 };
 
-//----------------------------------- find user by id---------------------------------
+//================================find single user=============================================
 
 const findUserById = async (id: string) => {
   const user = await UserModel.findById(id);
@@ -49,14 +48,14 @@ const findUserById = async (id: string) => {
   return user;
 };
 
-//--------------- find all user only access admin & receptponoist---------------------------
+// ===================================================== find all user==========================================
 
 const getAllUsers = async () => {
   const users = await UserModel.find().sort({ createdAt: -1 }); // latest first
   return users;
 };
 
-//---------------------- delete user by id (Soft Delete) ---------------------------
+// =====================================================delete user=================================================
 const deleteUserById = async (id: string) => {
   //  Find the user by ID
   const user = await UserModel.findById(id);
@@ -74,7 +73,7 @@ const deleteUserById = async (id: string) => {
   return user;
 };
 
-// -----------------------------------update user by id--------------------------------------
+//=========================================== update user================================================================
 const updateUserById = async (id: string, updateData: Partial<IUser>) => {
   // Only update if the user exists and is not soft deleted
   const updatedUser = await UserModel.findOneAndUpdate(
@@ -93,7 +92,7 @@ const updateUserById = async (id: string, updateData: Partial<IUser>) => {
   return updatedUser;
 };
 
-//----------------------- handle refresh token -----------------------------------
+// ======================================================refresh token ==============================================
 
 export const handleRefreshToken = async (refreshToken: string) => {
   const decoded = jwt.verify(refreshToken, envVariable.JWT_REFRESH_TOKEN_SECRET) as { id: string };
@@ -112,6 +111,8 @@ export const handleRefreshToken = async (refreshToken: string) => {
   return newAccessToken;
 };
 
+
+// ============================== Export Services==========================================================
 
 export const userServices = {
   registerUserIntoDb,

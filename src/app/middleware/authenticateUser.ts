@@ -5,7 +5,7 @@ import { AppError } from "../error/appError";
 
 import { envVariable } from "../config";
 import { logger } from "../utils/logger";
-import UserModel from "../modules/User/user.model";
+import UserModel from "../modules/User/user.schema";
 
 /**
  * Middleware to authenticate user using access token.

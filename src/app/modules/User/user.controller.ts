@@ -10,7 +10,7 @@ import { envVariable } from "../../config";
 import { logger } from "../../utils/logger";
 import { AppError } from "../../error/appError";
 
-//----------------------------- regitration -------------------------------------------------
+//======================================================== Regitration ===================================================================
 const regestrationUser = catchAsyncHandeller(
   async (req: Request, res: Response, next: NextFunction) => {
     const body = req.body;
@@ -47,7 +47,7 @@ const regestrationUser = catchAsyncHandeller(
   }
 );
 
-//----------------------------------------login user-----------------------------------
+// ============================================login user==============================================
 const loginUser = catchAsyncHandeller(
   async (req: Request, res: Response, next: NextFunction) => {
     const { email, password } = req.body;
@@ -92,7 +92,7 @@ const loginUser = catchAsyncHandeller(
   }
 );
 
-//---------------------------------find single user------------------------------------------
+//================================find single user=============================================
 
 const getSingleUser = catchAsyncHandeller(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -107,7 +107,7 @@ const getSingleUser = catchAsyncHandeller(
   }
 );
 
-// ------------------------------ find all user------------------------------------------------
+// ===================================================== find all user==========================================
 
 const getAllUsers = catchAsyncHandeller(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -126,7 +126,7 @@ const getAllUsers = catchAsyncHandeller(
   }
 );
 
-// -------------------------------delete user--------------------------------------------------
+// =====================================================delete user=================================================
 const deleteUser = catchAsyncHandeller(
   async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params;
@@ -141,7 +141,7 @@ const deleteUser = catchAsyncHandeller(
   }
 );
 
-//------------------------------- update user--------------------------------------------------
+//=========================================== update user================================================================
 const updateUser = catchAsyncHandeller(
   async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params;
@@ -157,7 +157,7 @@ const updateUser = catchAsyncHandeller(
   }
 );
 
-// -------------------------------refresh token ----------------------------------------
+// ======================================================refresh token ==============================================
 
 
 export const refreshAccessToken = catchAsyncHandeller(
@@ -178,7 +178,7 @@ export const refreshAccessToken = catchAsyncHandeller(
   }
 );
 
-
+// ======================export controller===============================================
 export const userController = {
   regestrationUser,
   loginUser,
