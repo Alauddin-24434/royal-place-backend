@@ -56,6 +56,11 @@ jobs:
           unzip render.zip
           sudo mv cli_v1.1.0 /usr/local/bin/render
 
+      - name: Set Render Workspace
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+        run: render workspace set "My Workspace" 
+
       - name: Deploy to Staging (development)
         if: github.ref == 'refs/heads/development'
         env:
