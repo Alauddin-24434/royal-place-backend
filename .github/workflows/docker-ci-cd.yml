@@ -2,9 +2,9 @@ name: Docker CI/CD
 
 on:
   push:
-    branches: [main, development]
+    branches: [main]    # এখন শুধু main ব্রাঞ্চে পুশে ট্রিগার হবে
   pull_request:
-    branches: [main, development]
+    branches: [main]
 
 jobs:
   build-and-deploy:
@@ -15,8 +15,9 @@ jobs:
       CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
       CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
       CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
-      AAMARPAY_STORE_ID: ${{secrets.AAMARPAY_STORE_ID}}  
-      AAMARPAY_SIGNATURE_KEY: ${{secrets.AAMARPAY_SIGNATURE_KEY}}
+      AAMARPAY_STORE_ID: ${{ secrets.AAMARPAY_STORE_ID }}  
+      AAMARPAY_SIGNATURE_KEY: ${{ secrets.AAMARPAY_SIGNATURE_KEY }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -56,17 +57,7 @@ jobs:
           unzip render.zip
           sudo mv cli_v1.1.0 /usr/local/bin/render
 
-      - name: Set Render Workspace
-        env:
-          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
-        run: render workspace set "My Workspace" -o json --confirm
-
-      - name: Deploy to Staging (development)
-        if: github.ref == 'refs/heads/development'
-        env:
-          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
-        run: |
-          render deploys create ${{ secrets.STAGING_RENDER_SERVICE_ID }} --confirm
+      # Set Render Workspace step omitted
 
       - name: Deploy to Production (main)
         if: github.ref == 'refs/heads/main'
