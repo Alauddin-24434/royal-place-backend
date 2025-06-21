@@ -1,5 +1,5 @@
 import { Schema, model } from "mongoose";
-import { IUser, UserRole } from "./user.interface";
+import { IUser } from "./user.interface";
 import bcrypt from "bcryptjs";
 
 const saltRounds = 12;
@@ -33,6 +33,12 @@ const userSchema = new Schema<IUser>(
     phone: {
       type: String,
       required: false,
+    },
+
+    // ✅ New image field with a default value
+    image: {
+      type: String,
+      default: "https://res.cloudinary.com/dyfamn6rm/image/upload/v1750533893/user-profile-avatar-free-vector_qwaldh.jpg",
     },
   },
   {

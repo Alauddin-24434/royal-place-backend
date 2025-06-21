@@ -14,15 +14,26 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.testimonialServices = void 0;
 const testimonial_model_1 = __importDefault(require("./testimonial.model"));
+//============================================== Create a new testimonial==========================================
 const testimonialCreate = (data) => __awaiter(void 0, void 0, void 0, function* () {
     const testimonial = yield testimonial_model_1.default.create(data);
     return testimonial;
 });
+//============================================== Get all testimonials sorted by newest==============================================
 const findAllTestimonial = () => __awaiter(void 0, void 0, void 0, function* () {
-    const testimonial = yield testimonial_model_1.default.find().sort({ _id: -1 });
-    return testimonial;
+    const testimonials = yield testimonial_model_1.default.find().sort({ _id: -1 });
+    return testimonials;
 });
+// ========================================Get testimonials by room ID====================================================
+const findTestimonialByRoomId = (roomId) => __awaiter(void 0, void 0, void 0, function* () {
+    const testimonials = yield testimonial_model_1.default
+        .find({ roomId })
+        .sort({ _id: -1 });
+    return testimonials;
+});
+// ===========================================Export services===================================================================
 exports.testimonialServices = {
     testimonialCreate,
-    findAllTestimonial
+    findAllTestimonial,
+    findTestimonialByRoomId,
 };

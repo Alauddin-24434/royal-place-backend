@@ -2,8 +2,11 @@ import { Types } from "mongoose";
 
 export interface ITestimonial{
     userId:Types.ObjectId;
-    name:string;
-    image: string;
-    review: string;
+    userName: string
+    userImage: string
+    roomId: string
+    rating: number
+    reviewText: string
+    reviewDate: string
 
 }

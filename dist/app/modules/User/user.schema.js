@@ -44,6 +44,11 @@ const userSchema = new mongoose_1.Schema({
         type: String,
         required: false,
     },
+    // ✅ New image field with a default value
+    image: {
+        type: String,
+        default: "https://res.cloudinary.com/dyfamn6rm/image/upload/v1750533893/user-profile-avatar-free-vector_qwaldh.jpg",
+    },
 }, {
     timestamps: true,
 });

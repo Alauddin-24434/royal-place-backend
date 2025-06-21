@@ -9,7 +9,7 @@ export enum UserRole {
 export interface IUser extends Document {
   _id: Types.ObjectId;
   name: string;
-  image:null;
+  image:string;
   email: string;
   password: string; // hashed password
   role: UserRole;
@@ -17,5 +17,6 @@ export interface IUser extends Document {
   createdAt: Date;
   updatedAt: Date;
   phone?: string;
+  
 }
 
