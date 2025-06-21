@@ -2,7 +2,7 @@ name: Docker CI/CD
 
 on:
   push:
-    branches: [main]    # এখন শুধু main ব্রাঞ্চে পুশে ট্রিগার হবে
+    branches: [main]
   pull_request:
     branches: [main]
 
@@ -53,15 +53,19 @@ jobs:
 
       - name: Install Render CLI
         run: |
-          curl -L https://github.com/render-oss/cli/releases/download/v1.1.0/cli_1.1.0_linux_amd64.zip -o render.zip
+          curl -L https://github.com/render-oss/cli/releases/latest/download/cli_latest_linux_amd64.zip -o render.zip
           unzip render.zip
-          sudo mv cli_v1.1.0 /usr/local/bin/render
+          sudo mv cli_latest_linux_amd64 /usr/local/bin/render
 
-      # Set Render Workspace step omitted
+      - name: Set Render Workspace (non-interactive)
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+        run: |
+          render workspace set "My Workspace" -o json --yes || true
 
       - name: Deploy to Production (main)
         if: github.ref == 'refs/heads/main'
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
         run: |
-          render deploys create ${{ secrets.PROD_RENDER_SERVICE_ID }} --confirm
+          render deploys create ${{ secrets.PROD_RENDER_SERVICE_ID }} --confirm --no-input -o json
