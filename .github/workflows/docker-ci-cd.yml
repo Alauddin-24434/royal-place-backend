@@ -53,9 +53,9 @@ jobs:
 
       - name: Install Render CLI
         run: |
-          curl -L https://github.com/render-oss/cli/releases/latest/download/cli_latest_linux_amd64.zip -o render.zip
-          unzip render.zip
-          sudo mv cli_latest_linux_amd64 /usr/local/bin/render
+          curl -L "https://github.com/render-oss/cli/releases/latest/download/render-linux-amd64" -o render
+          chmod +x render
+          sudo mv render /usr/local/bin/render
 
       - name: Set Render Workspace (non-interactive)
         env:
