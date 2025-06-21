@@ -59,7 +59,7 @@ jobs:
       - name: Set Render Workspace
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
-        run: render workspace set "My Workspace" 
+        run: render workspace set "My Workspace" -o json
 
       - name: Deploy to Staging (development)
         if: github.ref == 'refs/heads/development'
