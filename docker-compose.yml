@@ -1,10 +1,23 @@
+version: '3.8'
+
 services:
-  backend:
+  server:
     build: .
     ports:
       - "5000:5000"
     env_file:
       - .env
-    volumes:
-      - /app/node_modules
+    depends_on:
+      - mongo
     restart: unless-stopped
+
+  mongo:
+    image: mongo:6
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    restart: unless-stopped
+
+volumes:
+  mongo-data:
