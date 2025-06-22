@@ -1,7 +1,13 @@
+// ==============================
+// Imports & Initial Setup
+// ==============================
 import express, { Application, NextFunction, Request, Response } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
+// ==============================
+// Route Imports
+// ==============================
 import { userRoute } from "./app/modules/User/user.route";
 import { roomRoute } from "./app/modules/Room/room.route";
 import { amenityRoute } from "./app/modules/Amenities/amenities.route";
@@ -9,20 +15,30 @@ import { bookingRoute } from "./app/modules/Booking/booking.route";
 import { paymentRoute } from "./app/modules/Payment/payment.route";
 import { serviceRoute } from "./app/modules/Service/service.route";
 import { testimonialRoute } from "./app/modules/Testimonials/testimonial.route";
-import globalErrorHandler from "./app/middleware/globalErrorHandeller";
 import { cancelPredictRoute } from "./app/modules/CancelPredict/cancel.predict.route";
 
+// ==============================
+// Middleware Imports
+// ==============================
+import globalErrorHandler from "./app/middleware/globalErrorHandeller";
+
+// ==============================
+// App Configuration
+// ==============================
 const app: Application = express();
 
 app.use(cookieParser());
 app.use(cors({
   credentials: true,
-  origin: ["http://localhost:3000"],
+  origin: ["http://localhost:3000", "https://royal-place.vercel.app"],
 }));
 app.use(express.json());
-app.use(express.urlencoded({ extended: true })); // For parsing form-urlencoded bodies
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
+// ==============================
+// Root and Utility Routes
+// ==============================
 app.get("/", (req: Request, res: Response) => {
   res.status(200).json({
     success: true,
@@ -30,14 +46,6 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
-app.post("/api/payment/refund", (req: Request, res: Response) => {
-
-  console.log(req.body)
-  res.status(200).json({
-    success: true,
-    message: "Pyment Refuned",
-  });
-});
 app.get("/check", (req: Request, res: Response) => {
   res.status(200).json({
     success: true,
@@ -45,7 +53,13 @@ app.get("/check", (req: Request, res: Response) => {
   });
 });
 
-//refresh token route and veryfy and accestoken
+app.post("/api/payment/refund", (req: Request, res: Response) => {
+  console.log(req.body);
+  res.status(200).json({
+    success: true,
+    message: "Payment Refunded",
+  });
+});
 
 app.post("/api/refresh-token", (req: Request, res: Response) => {
   res.status(200).json({
@@ -54,8 +68,9 @@ app.post("/api/refresh-token", (req: Request, res: Response) => {
   });
 });
 
-
-
+// ==============================
+// API Routes
+// ==============================
 app.use('/api', userRoute);
 app.use('/api', roomRoute);
 app.use('/api', amenityRoute);
@@ -65,6 +80,9 @@ app.use('/api', serviceRoute);
 app.use('/api', testimonialRoute);
 app.use('/api', cancelPredictRoute);
 
+// ==============================
+// 404 Not Found Handler
+// ==============================
 app.use((req: Request, res: Response, next: NextFunction) => {
   res.status(404).json({
     success: false,
@@ -72,11 +90,12 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   });
 });
 
+// ==============================
+// Global Error Handler
+// ==============================
+app.use(globalErrorHandler);
 
-
-
-
-
-app.use(globalErrorHandler)
-
+// ==============================
+// Export App
+// ==============================
 export default app;

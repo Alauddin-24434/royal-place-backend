@@ -1,23 +1,38 @@
-import mongoose, { ObjectId } from "mongoose";
+import mongoose from "mongoose";
 import { AppError } from "../../error/appError";
 import BookingModel from "./booking.schema";
 import RoomModel from "../Room/room.schema";
 import { BookingStatus, IBooking } from "./booking.interface";
 import { differenceInDays } from "date-fns";
+import dayjs from "dayjs";
+import { initiatePayment } from "../../utils/aamarpay/aamarpay";
+import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 
-import { initiatePayment, } from "../../utils/aamarpay/aamarpay";
+dayjs.extend(isSameOrBefore);
+dayjs.extend(isSameOrAfter);
 
 import PaymentModel from "../Payment/payment.schema";
 import { PaymentStatus } from "../Payment/payment.interface";
 
-
-// =====================================Genarate TranId==========================================
+// ===================================== Generate TranId ==========================================
 function generateTransactionId() {
   return "TXN" + Date.now() + Math.floor(Math.random() * 1000);
 }
 
+// Utility: get all dates between two dates inclusive
+function getDateRangeArray(startDate: string, endDate: string): string[] {
+  const dates: string[] = [];
+  let currDate = dayjs(startDate);
+  const lastDate = dayjs(endDate);
+  while (currDate.isSameOrBefore(lastDate)) {
+    dates.push(currDate.format("YYYY-MM-DD"));
+    currDate = currDate.add(1, "day");
+  }
+  return dates;
+}
 
-// =======================================================Booking Initiate====================================================
+// ========================================== Booking Initialization ==================================
 const bookingInitialization = async (bookingData: IBooking) => {
   const { userId, rooms, name, email, city, address, phone } = bookingData;
 
@@ -27,7 +42,7 @@ const bookingInitialization = async (bookingData: IBooking) => {
   session.startTransaction();
 
   try {
-    // 1. Check Availability
+    // 1. Check Availability: Rooms overlapping with requested dates
     const existingBookings = await BookingModel.find({
       "rooms.roomId": { $in: roomIds },
       $or: rooms.map((r) => ({
@@ -44,7 +59,7 @@ const bookingInitialization = async (bookingData: IBooking) => {
           },
         ],
       })),
-      bookingStatus: BookingStatus.Pending,
+      bookingStatus: { $in: [BookingStatus.Booked, BookingStatus.Pending] }, // check both booked & pending
     }).session(session);
 
     if (existingBookings.length > 0) {
@@ -57,7 +72,7 @@ const bookingInitialization = async (bookingData: IBooking) => {
       throw new AppError("Some rooms not found", 404);
     }
 
-    // 3. Calculate Total Amount (based on individual nights)
+    // 3. Calculate Total Amount (based on nights)
     let totalAmount = 0;
     for (const room of rooms) {
       const nights = differenceInDays(new Date(room.checkOutDate), new Date(room.checkInDate));
@@ -67,7 +82,6 @@ const bookingInitialization = async (bookingData: IBooking) => {
       if (typeof room.price !== "number") {
         throw new AppError(`Invalid price for room ${room.roomId}`, 400);
       }
-
       totalAmount += room.price * nights;
     }
 
@@ -137,35 +151,51 @@ const bookingInitialization = async (bookingData: IBooking) => {
     throw error;
   }
 };
-// ====================================================== Avalable Room For Booking======================================================
 
-
+// ======================================= Get Booked Dates For Room =================================
 export const getBookedDatesForRoom = async (roomId: string) => {
-
-  if (!roomId) {
-    throw new AppError("Roomid is Required", 400)
+  if (!roomId || !mongoose.Types.ObjectId.isValid(roomId)) {
+    throw new AppError("Invalid or missing Room ID", 400);
   }
+
+  const today = dayjs().startOf("day");
+
   const bookings = await BookingModel.find({
-    rooms: [roomId],
-    bookingStatus: { $in: ["booked", "pending"] }, // optional, if cancelled ignore
-  }).select("checkInDate checkOutDate -_id");
+    bookingStatus: { $in: [BookingStatus.Booked, BookingStatus.Pending] },
+    "rooms.roomId": new mongoose.Types.ObjectId(roomId),
+  }).select("rooms -_id");
 
-  const blockedDates: string[] = [];
+  const detailBookedDates: { checkInDate: string; checkOutDate: string }[] = [];
+  const bookedDatesSet = new Set<string>();
 
-  for (const booking of bookings) {
-    // const current = new Date(booking.checkInDate);
-    // const end = new Date(booking.checkOutDate);
+for (const booking of bookings) {
+  for (const room of booking.rooms) {
+    if (
+      room.roomId.toString() === roomId &&
+      dayjs(room.checkOutDate).isSameOrAfter(today)
+    ) {
+      detailBookedDates.push({
+        checkInDate: dayjs(room.checkInDate).format("YYYY-MM-DD"),
+        checkOutDate: dayjs(room.checkOutDate).format("YYYY-MM-DD"),
+      });
 
-    // while (current <= end) {
-    //   blockedDates.push(current.toISOString().split("T")[0]); // only YYYY-MM-DD
-    //   current.setDate(current.getDate() + 1);
-    // }
+      const datesInRange = getDateRangeArray(
+        dayjs(room.checkInDate).format("YYYY-MM-DD"),
+        dayjs(room.checkOutDate).format("YYYY-MM-DD")
+      );
+      datesInRange.forEach((date) => bookedDatesSet.add(date));
+    }
   }
+}
 
-  return blockedDates;
+
+  return {
+    detailBookedDates,
+    bookedDates: Array.from(bookedDatesSet).sort(),
+  };
 };
 
-// ====================================filter booking===========================================
+// ======================================= Filter Bookings ============================================
 const filterBookings = async (queryParams: any) => {
   const {
     search,
@@ -178,44 +208,31 @@ const filterBookings = async (queryParams: any) => {
 
   const skip = (Number(page) - 1) * Number(limit);
 
-  // Build filters object manually instead of buildQueryFilters for more control
   const filters: any = {};
 
-  // Status filter - only add if value exists
   if (bookingStatus) {
-    // If multiple statuses are comma separated, split into array
-    const statusArr = bookingStatus.split(",").map((s: string) => s.trim().toLowerCase());
+    const statusArr = bookingStatus.split(",").map((s: string) => s.trim());
     filters.bookingStatus = { $in: statusArr };
   }
 
-  // Only include bookings that haven't expired (checkOutDate >= today 11:00 AM)
-  const today = new Date();
-  today.setHours(11, 0, 0, 0);
-  filters.checkOutDate = { $gte: today };
+  // We don't have 'checkOutDate' at root in schema, it is inside rooms array, so this filter might not work directly.
+  // You may want to filter bookings by date range inside rooms — that requires more complex aggregation.
+  // Here just a basic filter on bookingStatus and skip/limit.
 
-  // Date range filtering (if both dates provided)
-  if (startDate && endDate) {
-    filters.checkInDate = {
-      $gte: new Date(startDate),
-      $lte: new Date(endDate),
-    };
-  }
-
-  // Text search (optional)
   if (search) {
     filters.$or = [
-      { "bookingUser.name": { $regex: search, $options: "i" } },
-      { "bookingUser.email": { $regex: search, $options: "i" } },
-      { "bookingUser.phone": { $regex: search, $options: "i" } },
+      { name: { $regex: search, $options: "i" } },
+      { email: { $regex: search, $options: "i" } },
+      { phone: { $regex: search, $options: "i" } },
     ];
   }
 
   const data = await BookingModel.find(filters)
-    .populate("rooms")
-    .populate("userId")
     .skip(skip)
     .limit(Number(limit))
-    .sort({ createdAt: -1 });
+    .sort({ createdAt: -1 })
+    .populate("rooms.roomId")
+    .populate("userId");
 
   const total = await BookingModel.countDocuments(filters);
 
@@ -229,10 +246,7 @@ const filterBookings = async (queryParams: any) => {
   };
 };
 
-// =========================================Cancel Booking====================================================
-
-
-
+// ========================================= Cancel Booking ============================================
 export const cancelBookingService = async (transactionId: string) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -260,9 +274,6 @@ export const cancelBookingService = async (transactionId: string) => {
       };
     }
 
-    
-  
-
     // Cancel Booking
     booking.bookingStatus = BookingStatus.Cancelled;
     await booking.save({ session });
@@ -289,14 +300,10 @@ export const cancelBookingService = async (transactionId: string) => {
   }
 };
 
-
-
-// ========================Exxport Services=============================
+// ======================== Export Services =============================
 export const bookingServices = {
   bookingInitialization,
   getBookedDatesForRoom,
   cancelBookingService,
-  filterBookings
+  filterBookings,
 };
-
-

@@ -9,26 +9,26 @@ import { paymentServices } from "./payment.services";
 
 
 const paymentSuccess = catchAsyncHandeller(async (req: Request, res: Response) => {
-  const { transactionId } = req.query;
+    const { transactionId } = req.query;
 
-  try {
-    const payment = await paymentServices.paymentVerify(
-      transactionId as string
-    );
+    try {
+        const payment = await paymentServices.paymentVerify(
+            transactionId as string
+        );
 
-    const { status, pay_status, payment_type, status_title, transactionId: tran_id, amount } = payment;
+        const { status, pay_status, payment_type, status_title, transactionId: tran_id, amount } = payment;
 
-    console.log({
-      pay_status,
-      status,
-      payment_type,
-      status_title,
-      tran_id,
-      amount
-    });
+        console.log({
+            pay_status,
+            status,
+            payment_type,
+            status_title,
+            tran_id,
+            amount
+        });
 
-    // Compact Royal Place payment success page
-    res.send(`
+        // Compact Royal Place payment success page
+        res.send(`
       <!DOCTYPE html>
       <html lang="en">
       <head>
@@ -532,10 +532,10 @@ const paymentSuccess = catchAsyncHandeller(async (req: Request, res: Response) =
       </body>
       </html>
     `);
-  } catch (error) {
-    console.error("Error processing payment:", error);
-    res.status(500).send("Internal Server Error");
-  }
+    } catch (error) {
+        console.error("Error processing payment:", error);
+        res.status(500).send("Internal Server Error");
+    }
 });
 
 
@@ -543,26 +543,19 @@ const paymentSuccess = catchAsyncHandeller(async (req: Request, res: Response) =
 // ===============================================================Payment Faild===================================================================
 
 const paymentFail = catchAsyncHandeller(async (req: Request, res: Response) => {
-  const { transactionId } = req.query;
+    const { transactionId } = req.query;
 
-  try {
-    const payment = await paymentServices.paymentFail(
-      transactionId as string
-    );
+    try {
+        const payment = await paymentServices.paymentFail(
+            transactionId as string
+        );
 
-    const { status, pay_status, payment_type, status_title, transactionId: tran_id, amount } = payment;
+        const { payment_type, status_title, transactionId: tran_id, amount } = payment;
 
-    console.log({
-      pay_status,
-      status,
-      payment_type,
-      status_title,
-      tran_id,
-      amount
-    });
 
-    // Compact Royal Place payment failure page
-    res.send(`
+
+        // Compact Royal Place payment failure page
+        res.send(`
       <!DOCTYPE html>
       <html lang="en">
       <head>
@@ -1120,16 +1113,46 @@ const paymentFail = catchAsyncHandeller(async (req: Request, res: Response) => {
       </body>
       </html>
     `);
-  } catch (error) {
-    console.error("Error processing payment:", error);
-    res.status(500).send("Internal Server Error");
-  }
+    } catch (error) {
+        console.error("Error processing payment:", error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+// ===============================================================Payment Cancel===================================================================
+const paymentCancel = catchAsyncHandeller(async (req: Request, res: Response) => {
+    const { transactionId } = req.query;
+
+
+    const payment = await paymentServices.paymentCancel(transactionId as string);
+
+    const {
+        payment_type,
+        status_title,
+        transactionId: tran_id,
+        amount,
+        pay_status,
+        status,
+    } = payment;
+
+    res.status(200).json({
+        success: true,
+        message: "Payment cancelled successfully.",
+        data: {
+            transactionId: tran_id,
+            status,
+            pay_status,
+            status_title,
+            payment_type,
+            amount,
+        },
+    });
 });
 
 // ======================Export controller=============================
 export const paymentController = {
 
-  paymentSuccess,
-  paymentFail
+    paymentSuccess,
+    paymentFail,
+    paymentCancel
 
 };

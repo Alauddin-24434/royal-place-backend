@@ -542,15 +542,7 @@ const paymentFail = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res) =>
     const { transactionId } = req.query;
     try {
         const payment = yield payment_services_1.paymentServices.paymentFail(transactionId);
-        const { status, pay_status, payment_type, status_title, transactionId: tran_id, amount } = payment;
-        console.log({
-            pay_status,
-            status,
-            payment_type,
-            status_title,
-            tran_id,
-            amount
-        });
+        const { payment_type, status_title, transactionId: tran_id, amount } = payment;
         // Compact Royal Place payment failure page
         res.send(`
       <!DOCTYPE html>
@@ -1116,8 +1108,27 @@ const paymentFail = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res) =>
         res.status(500).send("Internal Server Error");
     }
 }));
+// ===============================================================Payment Cancel===================================================================
+const paymentCancel = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { transactionId } = req.query;
+    const payment = yield payment_services_1.paymentServices.paymentCancel(transactionId);
+    const { payment_type, status_title, transactionId: tran_id, amount, pay_status, status, } = payment;
+    res.status(200).json({
+        success: true,
+        message: "Payment cancelled successfully.",
+        data: {
+            transactionId: tran_id,
+            status,
+            pay_status,
+            status_title,
+            payment_type,
+            amount,
+        },
+    });
+}));
 // ======================Export controller=============================
 exports.paymentController = {
     paymentSuccess,
-    paymentFail
+    paymentFail,
+    paymentCancel
 };

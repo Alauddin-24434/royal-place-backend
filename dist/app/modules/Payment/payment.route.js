@@ -9,4 +9,5 @@ const payment_controller_1 = require("./payment.controller");
 const router = express_1.default.Router();
 router.post("/verify-payment", payment_controller_1.paymentController.paymentSuccess);
 router.post("/payment/fail", payment_controller_1.paymentController.paymentFail);
+router.post("/payment/cancel", payment_controller_1.paymentController.paymentCancel);
 exports.paymentRoute = router;

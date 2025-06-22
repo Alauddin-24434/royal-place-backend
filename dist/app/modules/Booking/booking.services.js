@@ -19,21 +19,37 @@ const booking_schema_1 = __importDefault(require("./booking.schema"));
 const room_schema_1 = __importDefault(require("../Room/room.schema"));
 const booking_interface_1 = require("./booking.interface");
 const date_fns_1 = require("date-fns");
+const dayjs_1 = __importDefault(require("dayjs"));
 const aamarpay_1 = require("../../utils/aamarpay/aamarpay");
+const isSameOrBefore_1 = __importDefault(require("dayjs/plugin/isSameOrBefore"));
+const isSameOrAfter_1 = __importDefault(require("dayjs/plugin/isSameOrAfter"));
+dayjs_1.default.extend(isSameOrBefore_1.default);
+dayjs_1.default.extend(isSameOrAfter_1.default);
 const payment_schema_1 = __importDefault(require("../Payment/payment.schema"));
 const payment_interface_1 = require("../Payment/payment.interface");
-// =====================================Genarate TranId==========================================
+// ===================================== Generate TranId ==========================================
 function generateTransactionId() {
     return "TXN" + Date.now() + Math.floor(Math.random() * 1000);
 }
-// =======================================================Booking Initiate====================================================
+// Utility: get all dates between two dates inclusive
+function getDateRangeArray(startDate, endDate) {
+    const dates = [];
+    let currDate = (0, dayjs_1.default)(startDate);
+    const lastDate = (0, dayjs_1.default)(endDate);
+    while (currDate.isSameOrBefore(lastDate)) {
+        dates.push(currDate.format("YYYY-MM-DD"));
+        currDate = currDate.add(1, "day");
+    }
+    return dates;
+}
+// ========================================== Booking Initialization ==================================
 const bookingInitialization = (bookingData) => __awaiter(void 0, void 0, void 0, function* () {
     const { userId, rooms, name, email, city, address, phone } = bookingData;
     const roomIds = rooms.map((r) => r.roomId);
     const session = yield mongoose_1.default.startSession();
     session.startTransaction();
     try {
-        // 1. Check Availability
+        // 1. Check Availability: Rooms overlapping with requested dates
         const existingBookings = yield booking_schema_1.default.find({
             "rooms.roomId": { $in: roomIds },
             $or: rooms.map((r) => ({
@@ -50,7 +66,7 @@ const bookingInitialization = (bookingData) => __awaiter(void 0, void 0, void 0,
                     },
                 ],
             })),
-            bookingStatus: booking_interface_1.BookingStatus.Pending,
+            bookingStatus: { $in: [booking_interface_1.BookingStatus.Booked, booking_interface_1.BookingStatus.Pending] }, // check both booked & pending
         }).session(session);
         if (existingBookings.length > 0) {
             throw new appError_1.AppError("One or more rooms are already booked in this period", 409);
@@ -60,7 +76,7 @@ const bookingInitialization = (bookingData) => __awaiter(void 0, void 0, void 0,
         if (roomDetails.length !== roomIds.length) {
             throw new appError_1.AppError("Some rooms not found", 404);
         }
-        // 3. Calculate Total Amount (based on individual nights)
+        // 3. Calculate Total Amount (based on nights)
         let totalAmount = 0;
         for (const room of rooms) {
             const nights = (0, date_fns_1.differenceInDays)(new Date(room.checkOutDate), new Date(room.checkInDate));
@@ -129,64 +145,62 @@ const bookingInitialization = (bookingData) => __awaiter(void 0, void 0, void 0,
         throw error;
     }
 });
-// ====================================================== Avalable Room For Booking======================================================
+// ======================================= Get Booked Dates For Room =================================
 const getBookedDatesForRoom = (roomId) => __awaiter(void 0, void 0, void 0, function* () {
-    if (!roomId) {
-        throw new appError_1.AppError("Roomid is Required", 400);
+    if (!roomId || !mongoose_1.default.Types.ObjectId.isValid(roomId)) {
+        throw new appError_1.AppError("Invalid or missing Room ID", 400);
     }
+    const today = (0, dayjs_1.default)().startOf("day");
     const bookings = yield booking_schema_1.default.find({
-        rooms: [roomId],
-        bookingStatus: { $in: ["booked", "pending"] }, // optional, if cancelled ignore
-    }).select("checkInDate checkOutDate -_id");
-    const blockedDates = [];
+        bookingStatus: { $in: [booking_interface_1.BookingStatus.Booked, booking_interface_1.BookingStatus.Pending] },
+        "rooms.roomId": new mongoose_1.default.Types.ObjectId(roomId),
+    }).select("rooms -_id");
+    const detailBookedDates = [];
+    const bookedDatesSet = new Set();
     for (const booking of bookings) {
-        // const current = new Date(booking.checkInDate);
-        // const end = new Date(booking.checkOutDate);
-        // while (current <= end) {
-        //   blockedDates.push(current.toISOString().split("T")[0]); // only YYYY-MM-DD
-        //   current.setDate(current.getDate() + 1);
-        // }
+        for (const room of booking.rooms) {
+            if (room.roomId.toString() === roomId &&
+                (0, dayjs_1.default)(room.checkOutDate).isSameOrAfter(today)) {
+                detailBookedDates.push({
+                    checkInDate: (0, dayjs_1.default)(room.checkInDate).format("YYYY-MM-DD"),
+                    checkOutDate: (0, dayjs_1.default)(room.checkOutDate).format("YYYY-MM-DD"),
+                });
+                const datesInRange = getDateRangeArray((0, dayjs_1.default)(room.checkInDate).format("YYYY-MM-DD"), (0, dayjs_1.default)(room.checkOutDate).format("YYYY-MM-DD"));
+                datesInRange.forEach((date) => bookedDatesSet.add(date));
+            }
+        }
     }
-    return blockedDates;
+    return {
+        detailBookedDates,
+        bookedDates: Array.from(bookedDatesSet).sort(),
+    };
 });
 exports.getBookedDatesForRoom = getBookedDatesForRoom;
-// ====================================filter booking===========================================
+// ======================================= Filter Bookings ============================================
 const filterBookings = (queryParams) => __awaiter(void 0, void 0, void 0, function* () {
     const { search, startDate, endDate, bookingStatus, page = 1, limit = 10, } = queryParams;
     const skip = (Number(page) - 1) * Number(limit);
-    // Build filters object manually instead of buildQueryFilters for more control
     const filters = {};
-    // Status filter - only add if value exists
     if (bookingStatus) {
-        // If multiple statuses are comma separated, split into array
-        const statusArr = bookingStatus.split(",").map((s) => s.trim().toLowerCase());
+        const statusArr = bookingStatus.split(",").map((s) => s.trim());
         filters.bookingStatus = { $in: statusArr };
     }
-    // Only include bookings that haven't expired (checkOutDate >= today 11:00 AM)
-    const today = new Date();
-    today.setHours(11, 0, 0, 0);
-    filters.checkOutDate = { $gte: today };
-    // Date range filtering (if both dates provided)
-    if (startDate && endDate) {
-        filters.checkInDate = {
-            $gte: new Date(startDate),
-            $lte: new Date(endDate),
-        };
-    }
-    // Text search (optional)
+    // We don't have 'checkOutDate' at root in schema, it is inside rooms array, so this filter might not work directly.
+    // You may want to filter bookings by date range inside rooms — that requires more complex aggregation.
+    // Here just a basic filter on bookingStatus and skip/limit.
     if (search) {
         filters.$or = [
-            { "bookingUser.name": { $regex: search, $options: "i" } },
-            { "bookingUser.email": { $regex: search, $options: "i" } },
-            { "bookingUser.phone": { $regex: search, $options: "i" } },
+            { name: { $regex: search, $options: "i" } },
+            { email: { $regex: search, $options: "i" } },
+            { phone: { $regex: search, $options: "i" } },
         ];
     }
     const data = yield booking_schema_1.default.find(filters)
-        .populate("rooms")
-        .populate("userId")
         .skip(skip)
         .limit(Number(limit))
-        .sort({ createdAt: -1 });
+        .sort({ createdAt: -1 })
+        .populate("rooms.roomId")
+        .populate("userId");
     const total = yield booking_schema_1.default.countDocuments(filters);
     return {
         meta: {
@@ -197,7 +211,7 @@ const filterBookings = (queryParams) => __awaiter(void 0, void 0, void 0, functi
         data,
     };
 });
-// =========================================Cancel Booking====================================================
+// ========================================= Cancel Booking ============================================
 const cancelBookingService = (transactionId) => __awaiter(void 0, void 0, void 0, function* () {
     const session = yield mongoose_1.default.startSession();
     session.startTransaction();
@@ -241,10 +255,10 @@ const cancelBookingService = (transactionId) => __awaiter(void 0, void 0, void 0
     }
 });
 exports.cancelBookingService = cancelBookingService;
-// ========================Exxport Services=============================
+// ======================== Export Services =============================
 exports.bookingServices = {
     bookingInitialization,
     getBookedDatesForRoom: exports.getBookedDatesForRoom,
     cancelBookingService: exports.cancelBookingService,
-    filterBookings
+    filterBookings,
 };

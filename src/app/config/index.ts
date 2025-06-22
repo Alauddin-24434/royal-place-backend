@@ -11,7 +11,7 @@ export const envVariable = {
   SUCCESS_URL: process.env.SUCCESS_URL || "",
   FAIL_URL: process.env.FAIL_URL || "",
   CANCEL_URL: process.env.CANCEL_URL || "",
-  
+
 
   JWT_ACCESS_TOKEN_SECRET: process.env.JWT_ACCESS_TOKEN_SECRET || "",
   JWT_REFRESH_TOKEN_SECRET: process.env.JWT_REFRESH_TOKEN_SECRET || "",
