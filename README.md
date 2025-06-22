@@ -42,7 +42,7 @@ CANCEL_URL=http://localhost/api/payment/cancel
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/Alauddin-24434/royal-place-backend
+git clone https://github.com/Alauddin-24434/royal-place-backend.git
 cd royal-place-backend
 ```
 
