@@ -42,9 +42,22 @@ const deleteService = (id) => __awaiter(void 0, void 0, void 0, function* () {
     const deleteService = yield service_schema_1.default.deleteOne({ _id: id });
     return deleteService;
 });
+// ===============================================Update service by Id=======================================================
+const updateService = (id, payload) => __awaiter(void 0, void 0, void 0, function* () {
+    const existingService = yield service_schema_1.default.findById(id);
+    if (!existingService) {
+        throw new appError_1.AppError("Service not found", 404);
+    }
+    const updatedService = yield service_schema_1.default.findByIdAndUpdate(id, payload, {
+        new: true,
+        runValidators: true,
+    });
+    return updatedService;
+});
 // ==============================export service=============================
 exports.serviceServices = {
     crateService,
     getAllServices,
-    deleteService
+    deleteService,
+    updateService
 };

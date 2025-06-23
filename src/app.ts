@@ -21,6 +21,7 @@ import { cancelPredictRoute } from "./app/modules/CancelPredict/cancel.predict.r
 // Middleware Imports
 // ==============================
 import globalErrorHandler from "./app/middleware/globalErrorHandeller";
+import { dashboardRoute } from "./app/modules/Dashboard/dashboard.route";
 
 // ==============================
 // App Configuration
@@ -79,6 +80,7 @@ app.use('/api', paymentRoute);
 app.use('/api', serviceRoute);
 app.use('/api', testimonialRoute);
 app.use('/api', cancelPredictRoute);
+app.use('/api', dashboardRoute);
 
 // ==============================
 // 404 Not Found Handler

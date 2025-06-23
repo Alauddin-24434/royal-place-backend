@@ -42,9 +42,27 @@ const deleteService = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res) 
         data: service,
     });
 }));
+// ===============================================Update service by Id=======================================================
+const updateService = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const { id } = req.params;
+    const imageUrl = (_a = req.file) === null || _a === void 0 ? void 0 : _a.path;
+    const updateData = Object.assign(Object.assign({}, req.body), { pricePerDay: req.body.pricePerDay ? Number(req.body.pricePerDay) : undefined });
+    // If image exists, attach it
+    if (imageUrl) {
+        updateData.image = imageUrl;
+    }
+    const updatedService = yield service_services_1.serviceServices.updateService(id, updateData);
+    res.status(200).json({
+        success: true,
+        message: "Service updated successfully",
+        data: updatedService,
+    });
+}));
 // ==============================export controller=============================
 exports.serviceController = {
     createService,
+    updateService,
     getAllServices,
     deleteService
 };

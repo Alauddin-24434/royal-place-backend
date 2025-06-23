@@ -36,10 +36,27 @@ const deleteService = async (id: string) => {
   return deleteService;
 
 };
+// ===============================================Update service by Id=======================================================
+const updateService = async (id: string, payload: Partial<IService>) => {
+  const existingService = await ServiceModel.findById(id);
+
+  if (!existingService) {
+    throw new AppError("Service not found", 404);
+  }
+
+  const updatedService = await ServiceModel.findByIdAndUpdate(id, payload, {
+    new: true,
+    runValidators: true,
+  });
+
+  return updatedService;
+};
+
 
 // ==============================export service=============================
 export const serviceServices = {
   crateService,
   getAllServices,
-  deleteService
+  deleteService,
+  updateService
 };

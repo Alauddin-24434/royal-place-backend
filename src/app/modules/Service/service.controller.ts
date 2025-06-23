@@ -50,11 +50,38 @@ const deleteService = catchAsyncHandeller(
     });
   }
 );
+// ===============================================Update service by Id=======================================================
+const updateService = catchAsyncHandeller(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    const imageUrl = req.file?.path;
+
+    const updateData = {
+      ...req.body,
+      pricePerDay: req.body.pricePerDay ? Number(req.body.pricePerDay) : undefined,
+    };
+
+    // If image exists, attach it
+    if (imageUrl) {
+      updateData.image = imageUrl;
+    }
+
+    const updatedService = await serviceServices.updateService(id, updateData);
+
+    res.status(200).json({
+      success: true,
+      message: "Service updated successfully",
+      data: updatedService,
+    });
+  }
+);
 
 
 // ==============================export controller=============================
 export const serviceController = {
   createService,
+  updateService,
   getAllServices,
   deleteService
 };

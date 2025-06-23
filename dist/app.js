@@ -24,6 +24,7 @@ const cancel_predict_route_1 = require("./app/modules/CancelPredict/cancel.predi
 // Middleware Imports
 // ==============================
 const globalErrorHandeller_1 = __importDefault(require("./app/middleware/globalErrorHandeller"));
+const dashboard_route_1 = require("./app/modules/Dashboard/dashboard.route");
 // ==============================
 // App Configuration
 // ==============================
@@ -75,6 +76,7 @@ app.use('/api', payment_route_1.paymentRoute);
 app.use('/api', service_route_1.serviceRoute);
 app.use('/api', testimonial_route_1.testimonialRoute);
 app.use('/api', cancel_predict_route_1.cancelPredictRoute);
+app.use('/api', dashboard_route_1.dashboardRoute);
 // ==============================
 // 404 Not Found Handler
 // ==============================
