@@ -24,7 +24,9 @@ const testimonialCreate = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, r
 }));
 //====================================================== Get all testimonials===============================================
 const findAllTestimonials = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield testimonial_service_1.testimonialServices.findAllTestimonial();
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const result = yield testimonial_service_1.testimonialServices.findAllTestimonial({ page, limit });
     res.status(200).json({
         success: true,
         message: "Testimonials fetched successfully",
@@ -33,11 +35,21 @@ const findAllTestimonials = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req,
 }));
 //========================================================== Get testimonials by roomId===========================================
 const findTestimonialsByRoomId = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { roomId } = req.params;
-    const result = yield testimonial_service_1.testimonialServices.findTestimonialByRoomId(roomId);
+    const { id } = req.params;
+    const result = yield testimonial_service_1.testimonialServices.findTestimonialByRoomId(id);
     res.status(200).json({
         success: true,
-        message: `Testimonials for Room ID: ${roomId} fetched successfully`,
+        message: `Testimonials for Room ID: ${id} fetched successfully`,
+        data: result,
+    });
+}));
+//========================================================== Delete testimonial by ID ===========================================
+const deleteTestimonialById = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    const result = yield testimonial_service_1.testimonialServices.deleteTestimonialById(id);
+    res.status(200).json({
+        success: true,
+        message: "Testimonial deleted successfully",
         data: result,
     });
 }));
@@ -46,4 +58,5 @@ exports.testimonialController = {
     testimonialCreate,
     findAllTestimonials,
     findTestimonialsByRoomId,
+    deleteTestimonialById
 };

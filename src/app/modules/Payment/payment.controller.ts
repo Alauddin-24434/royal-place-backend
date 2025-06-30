@@ -342,7 +342,7 @@ const paymentSuccess = catchAsyncHandeller(async (req: Request, res: Response) =
               </div>
               
               <div class="action-buttons">
-                  <a href="/" class="home-button" title="Go Home">
+                  <a href="https://royal-place.vercel.app" class="home-button" title="Go Home">
                       <svg class="icon" viewBox="0 0 24 24">
                           <path d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z"/>
                       </svg>
@@ -911,7 +911,7 @@ const paymentFail = catchAsyncHandeller(async (req: Request, res: Response) => {
               </div>
               
               <div class="action-buttons">
-                  <a href="/" class="home-button" title="Go Home">
+                  <a href="https://royal-place.vercel.app" class="home-button" title="Go Home">
                       <svg class="icon" viewBox="0 0 24 24">
                           <path d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z"/>
                       </svg>

@@ -9,5 +9,7 @@ router.post('/testimonial', testimonial_controller_1.testimonialController.testi
 // =========================Get all testimonials==============================
 router.get('/testimonials', testimonial_controller_1.testimonialController.findAllTestimonials);
 //======================= Get testimonials by specific room ID===============================
-router.get("/testimonial/:roomId", testimonial_controller_1.testimonialController.findTestimonialsByRoomId);
+router.get("/testimonial/:id", testimonial_controller_1.testimonialController.findTestimonialsByRoomId);
+// =======================Delete testimonial by ID (hard delete)==============================
+router.delete("/testimonial/:id", testimonial_controller_1.testimonialController.deleteTestimonialById); // 👈 added line
 exports.testimonialRoute = router;
