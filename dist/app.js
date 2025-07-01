@@ -59,12 +59,6 @@ app.post("/api/payment/refund", (req, res) => {
         message: "Payment Refunded",
     });
 });
-app.post("/api/refresh-token", (req, res) => {
-    res.status(200).json({
-        success: true,
-        message: "Refresh token route",
-    });
-});
 // ==============================
 // API Routes
 // ==============================

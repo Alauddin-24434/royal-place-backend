@@ -14,15 +14,13 @@ const catchAsyncHandeller_1 = require("../../utils/catchAsyncHandeller");
 const appError_1 = require("../../error/appError");
 const dashboard_service_1 = require("./dashboard.service");
 const getDashboardData = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    const role = req.query.role;
-    const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a._id; // যদি auth middleware থাকে
-    console.log(role);
-    console.log(userId);
+    var _a, _b;
+    const role = (_a = req.user) === null || _a === void 0 ? void 0 : _a.role; // Role comes from authenticated user
+    const userId = (_b = req.user) === null || _b === void 0 ? void 0 : _b._id; // Also from auth middleware
     if (!role) {
-        throw new appError_1.AppError("Role is required", 400);
+        throw new appError_1.AppError("User role is required", 400);
     }
-    const data = yield dashboard_service_1.dashboardService.getStatsByRole(role, userId);
+    const data = yield dashboard_service_1.dashboardService.dashboardOverviewByRole(role, userId);
     res.status(200).json(Object.assign({ success: true }, data));
 }));
 exports.dashboardController = {

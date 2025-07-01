@@ -111,9 +111,9 @@ const getSingleUser = catchAsyncHandeller(
 
 const getAllUsers = catchAsyncHandeller(
   async (req: Request, res: Response, next: NextFunction) => {
-  
-   
-   
+
+
+
 
     const users = await userServices.getAllUsers();
     logger.info("All users fetched successfully");
@@ -159,24 +159,32 @@ const updateUser = catchAsyncHandeller(
 
 // ======================================================refresh token ==============================================
 
-
 export const refreshAccessToken = catchAsyncHandeller(
   async (req: Request, res: Response) => {
     const refreshToken =
       req.cookies?.refreshToken || req.headers["x-refresh-token"];
 
     if (!refreshToken) {
+    
       throw new AppError("Refresh token missing", 401);
     }
 
-    const accessToken = await userServices.handleRefreshToken(refreshToken);
+    const user = await userServices.handleRefreshToken(refreshToken);
+    const payload = { id: user._id, role: user.role };
+
+    // accessToken
+    const accessToken = createAccessToken(payload);
+
+
 
     res.status(200).json({
       success: true,
+      message: "Access token refreshed successfully",
       accessToken,
     });
   }
 );
+
 
 // ======================export controller===============================================
 export const userController = {

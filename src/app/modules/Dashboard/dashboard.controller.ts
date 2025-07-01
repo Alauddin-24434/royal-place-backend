@@ -1,20 +1,17 @@
 import { Request, Response } from "express";
 import { catchAsyncHandeller } from "../../utils/catchAsyncHandeller";
-
 import { AppError } from "../../error/appError";
 import { dashboardService } from "./dashboard.service";
 
 const getDashboardData = catchAsyncHandeller(async (req: Request, res: Response) => {
-  const role = req.query.role as string;
-  const userId = req.user?._id; // যদি auth middleware থাকে
-  console.log(role);
-  console.log(userId)
+  const role = req.user?.role; // Role comes from authenticated user
+  const userId = req.user?._id; // Also from auth middleware
 
   if (!role) {
-    throw new AppError ("Role is required", 400 );
+    throw new AppError("User role is required", 400);
   }
 
-  const data = await dashboardService.getStatsByRole(role, userId);
+  const data = await dashboardService.dashboardOverviewByRole(role, userId);
 
   res.status(200).json({
     success: true,

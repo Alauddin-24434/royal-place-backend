@@ -11,8 +11,7 @@ import UserModel from "../modules/User/user.schema";
  * Middleware to authenticate user using access token.
  * Looks for token in cookies or Authorization header.
  * Verifies the token and attaches the user to req.user if valid.
- */
-export const authenticateUser = async (req: Request, res: Response, next: NextFunction) => {
+ */export const authenticateUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const token = req?.cookies?.accessToken || req?.headers?.authorization?.split(" ")[1];
 
@@ -25,7 +24,7 @@ export const authenticateUser = async (req: Request, res: Response, next: NextFu
     const decoded = jwt.verify(token, envVariable.JWT_ACCESS_TOKEN_SECRET) as { id: string };
 
     // Find user by ID from decoded token
-    const user = await UserModel.findById(decoded.id).select("role");
+    const user = await UserModel.findById(decoded.id).select("role _id");
 
     // User not found in DB
     if (!user) {
@@ -34,8 +33,15 @@ export const authenticateUser = async (req: Request, res: Response, next: NextFu
 
     req.user = user; // Attach user info to request object
     next();
-  } catch (error) {
-    // Token invalid or expired
-    next(new AppError("Invalid or expired token", 403));
+  } catch (error: any) {
+    if (error.name === "TokenExpiredError") {
+      return next(new AppError("Access token expired. Please login again.", 401));
+    }
+
+    if (error.name === "JsonWebTokenError") {
+      return next(new AppError("Invalid token. Please try logging in again.", 401));
+    }
+
+    return next(error); // other unhandled errors
   }
 };

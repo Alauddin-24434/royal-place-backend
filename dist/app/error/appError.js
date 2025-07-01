@@ -6,6 +6,9 @@ class AppError extends Error {
         super(message);
         this.statusCode = statusCode;
         this.isOperational = isOperational;
+        // Set error name to class name (helps identify error type)
+        this.name = this.constructor.name;
+        // Captures stack trace excluding constructor call from it
         Error.captureStackTrace(this, this.constructor);
     }
 }

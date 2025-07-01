@@ -102,13 +102,9 @@ export const handleRefreshToken = async (refreshToken: string) => {
     throw new AppError("User not found", 404);
   }
 
-  const newAccessToken = jwt.sign(
-    { id: user._id, role: user.role },
-    envVariable.JWT_ACCESS_TOKEN_SECRET,
-    { expiresIn: "1h" }
-  );
+  
 
-  return newAccessToken;
+  return user;
 };
 
 

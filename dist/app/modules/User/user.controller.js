@@ -131,9 +131,13 @@ exports.refreshAccessToken = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req
     if (!refreshToken) {
         throw new appError_1.AppError("Refresh token missing", 401);
     }
-    const accessToken = yield user_sevices_1.userServices.handleRefreshToken(refreshToken);
+    const user = yield user_sevices_1.userServices.handleRefreshToken(refreshToken);
+    const payload = { id: user._id, role: user.role };
+    // accessToken
+    const accessToken = (0, generateTokens_1.createAccessToken)(payload);
     res.status(200).json({
         success: true,
+        message: "Access token refreshed successfully",
         accessToken,
     });
 }));

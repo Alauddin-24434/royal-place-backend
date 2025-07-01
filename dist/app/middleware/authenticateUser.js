@@ -22,8 +22,7 @@ const user_schema_1 = __importDefault(require("../modules/User/user.schema"));
  * Middleware to authenticate user using access token.
  * Looks for token in cookies or Authorization header.
  * Verifies the token and attaches the user to req.user if valid.
- */
-const authenticateUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+ */ const authenticateUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c;
     try {
         const token = ((_a = req === null || req === void 0 ? void 0 : req.cookies) === null || _a === void 0 ? void 0 : _a.accessToken) || ((_c = (_b = req === null || req === void 0 ? void 0 : req.headers) === null || _b === void 0 ? void 0 : _b.authorization) === null || _c === void 0 ? void 0 : _c.split(" ")[1]);
@@ -34,7 +33,7 @@ const authenticateUser = (req, res, next) => __awaiter(void 0, void 0, void 0, f
         // Decode and verify token
         const decoded = jsonwebtoken_1.default.verify(token, config_1.envVariable.JWT_ACCESS_TOKEN_SECRET);
         // Find user by ID from decoded token
-        const user = yield user_schema_1.default.findById(decoded.id).select("role");
+        const user = yield user_schema_1.default.findById(decoded.id).select("role _id");
         // User not found in DB
         if (!user) {
             throw new appError_1.AppError("Authentication failed: User not found", 404);
@@ -43,8 +42,13 @@ const authenticateUser = (req, res, next) => __awaiter(void 0, void 0, void 0, f
         next();
     }
     catch (error) {
-        // Token invalid or expired
-        next(new appError_1.AppError("Invalid or expired token", 403));
+        if (error.name === "TokenExpiredError") {
+            return next(new appError_1.AppError("Access token expired. Please login again.", 401));
+        }
+        if (error.name === "JsonWebTokenError") {
+            return next(new appError_1.AppError("Invalid token. Please try logging in again.", 401));
+        }
+        return next(error); // other unhandled errors
     }
 });
 exports.authenticateUser = authenticateUser;

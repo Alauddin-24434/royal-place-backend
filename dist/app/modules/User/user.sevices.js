@@ -85,8 +85,7 @@ const handleRefreshToken = (refreshToken) => __awaiter(void 0, void 0, void 0, f
     if (!user) {
         throw new appError_1.AppError("User not found", 404);
     }
-    const newAccessToken = jsonwebtoken_1.default.sign({ id: user._id, role: user.role }, config_1.envVariable.JWT_ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
-    return newAccessToken;
+    return user;
 });
 exports.handleRefreshToken = handleRefreshToken;
 // ============================== Export Services==========================================================
