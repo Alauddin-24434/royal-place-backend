@@ -1,4 +1,4 @@
-import { verifyPayment } from "../../utils/aamarpay/aamarpay";
+import { verifyPayment } from "../../utils/payment.utills";
 import BookingModel from "../Booking/booking.schema";
 import mongoose from "mongoose";
 import PaymentModel from "./payment.schema";

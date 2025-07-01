@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 
 import { catchAsyncHandeller } from "../../utils/catchAsyncHandeller";
 import { userServices } from "./user.sevices";
-import { createAccessToken, createRefreshToken } from "../../utils/generateTokens/generateTokens";
+import { createAccessToken, createRefreshToken } from "../../utils/generateTokens";
 import { envVariable } from "../../config";
 import { logger } from "../../utils/logger";
 import { AppError } from "../../error/appError";

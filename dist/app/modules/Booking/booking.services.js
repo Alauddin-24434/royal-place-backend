@@ -20,7 +20,7 @@ const room_schema_1 = __importDefault(require("../Room/room.schema"));
 const booking_interface_1 = require("./booking.interface");
 const date_fns_1 = require("date-fns");
 const dayjs_1 = __importDefault(require("dayjs"));
-const aamarpay_1 = require("../../utils/aamarpay/aamarpay");
+const payment_utills_1 = require("../../utils/payment.utills");
 const isSameOrBefore_1 = __importDefault(require("dayjs/plugin/isSameOrBefore"));
 const isSameOrAfter_1 = __importDefault(require("dayjs/plugin/isSameOrAfter"));
 dayjs_1.default.extend(isSameOrBefore_1.default);
@@ -110,7 +110,7 @@ const bookingInitialization = (bookingData) => __awaiter(void 0, void 0, void 0,
             },
         ], { session });
         // 6. Initiate Payment
-        const paymentResult = yield (0, aamarpay_1.initiatePayment)({
+        const paymentResult = yield (0, payment_utills_1.initiatePayment)({
             amount: createdBooking.totalAmount,
             transactionId: createdBooking.transactionId,
             name,

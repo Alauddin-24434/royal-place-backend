@@ -7,8 +7,12 @@ exports.bookingRoute = void 0;
 const express_1 = __importDefault(require("express"));
 const booking_controller_1 = require("./booking.controller");
 const router = express_1.default.Router();
-router.post("/initiate", booking_controller_1.bookingController.initiateBooking);
-router.get("/filter-bookings", booking_controller_1.bookingController.getFilteredBookings);
-router.get("/booking-check/:id", booking_controller_1.bookingController.checkAvailableRooms);
-router.post("/cancel-booking", booking_controller_1.bookingController.cancelBooking);
+// ✅ Create a new booking
+router.post("/", booking_controller_1.bookingController.initiateBooking);
+// ✅ Cancel booking (better: PATCH + ID)
+router.patch("/:id", booking_controller_1.bookingController.cancelBooking);
+// ✅ Get all bookings (filter by query)
+router.get("/", booking_controller_1.bookingController.getFilteredBookings);
+// ✅ Get booking by ID (or check availability if that's the actual intent)
+router.get("/:id", booking_controller_1.bookingController.checkAvailableRoomsById);
 exports.bookingRoute = router;

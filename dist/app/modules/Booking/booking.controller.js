@@ -25,7 +25,7 @@ const initiateBooking = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res
     });
 }));
 // ========================================Avalabe rooms For Booking=================================================
-const checkAvailableRooms = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const checkAvailableRoomsById = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     const blockedDates = yield booking_services_1.bookingServices.getBookedDatesForRoom(id);
     res.status(200).json({
@@ -50,7 +50,7 @@ const cancelBooking = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res) 
 // ========================Exxport Controller=============================
 exports.bookingController = {
     initiateBooking,
-    checkAvailableRooms,
+    checkAvailableRoomsById,
     cancelBooking,
     getFilteredBookings
 };

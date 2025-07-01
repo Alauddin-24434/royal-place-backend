@@ -13,7 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.paymentServices = void 0;
-const aamarpay_1 = require("../../utils/aamarpay/aamarpay");
+const payment_utills_1 = require("../../utils/payment.utills");
 const booking_schema_1 = __importDefault(require("../Booking/booking.schema"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const payment_schema_1 = __importDefault(require("./payment.schema"));
@@ -25,7 +25,7 @@ const paymentVerify = (transactionId) => __awaiter(void 0, void 0, void 0, funct
     session.startTransaction();
     try {
         // ✅ Step 1: Verify with AamarPay
-        const verificationResponse = yield (0, aamarpay_1.verifyPayment)(transactionId);
+        const verificationResponse = yield (0, payment_utills_1.verifyPayment)(transactionId);
         console.log('AamarPay verification response:', verificationResponse);
         // ✅ Step 2: Get payment record
         const payment = yield payment_schema_1.default.findOne({ transactionId }).session(session);
@@ -66,7 +66,7 @@ const paymentFail = (transactionId) => __awaiter(void 0, void 0, void 0, functio
     session.startTransaction();
     try {
         // ✅ Step 1: Verify with AamarPay
-        const verificationResponse = yield (0, aamarpay_1.verifyPayment)(transactionId);
+        const verificationResponse = yield (0, payment_utills_1.verifyPayment)(transactionId);
         console.log('AamarPay verification response:', verificationResponse);
         // ✅ Step 2: Get payment record
         const payment = yield payment_schema_1.default.findOne({ transactionId }).session(session);
@@ -112,7 +112,7 @@ const paymentCancel = (transactionId) => __awaiter(void 0, void 0, void 0, funct
     session.startTransaction();
     try {
         // ✅ Step 1: Verify with AamarPay
-        const verificationResponse = yield (0, aamarpay_1.verifyPayment)(transactionId);
+        const verificationResponse = yield (0, payment_utills_1.verifyPayment)(transactionId);
         console.log('AamarPay verification response:', verificationResponse);
         // ✅ Step 2: Get payment record
         const payment = yield payment_schema_1.default.findOne({ transactionId }).session(session);

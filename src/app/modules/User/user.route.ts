@@ -1,33 +1,16 @@
 import { Router } from "express";
 import { userController } from "./user.controller";
-import { authenticateUser } from "../../middleware/authenticateUser";
-import { checkRole } from "../../utils/checkRole";
-
 
 const router = Router();
 
-// 👉 Register user
 router.post("/signup", userController.regestrationUser);
-
-
-// 👉 Login user
 router.post("/login", userController.loginUser);
-
-// refresh token route
 router.post("/refresh-token", userController.refreshAccessToken);
 
-// 👉 Get all users (accessible by admin & receptionist)
-
-router.get("/users",  userController.getAllUsers); 
-
-// 👉 Get single user by ID
-router.get("/user/:id", userController.getSingleUser);
-
-// 👉 Update user by ID
-router.patch("/user/:id", userController.updateUser);
-
-// 👉 Delete user by ID
-router.delete("/user/:id", userController.deleteUser);
-
-// 🚀 Export the routes
+// RESTful route group
+router.get("/", userController.getAllUsers);         // GET /api/users
+router.get("/:id", userController.getSingleUser);    // GET /api/users/:id
+router.patch("/:id", userController.updateUser);     // PATCH /api/users/:id
+router.delete("/:id", userController.deleteUser);    // DELETE /api/users/:id
+//  Export the routes
 export const userRoute = router;

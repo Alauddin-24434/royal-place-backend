@@ -16,7 +16,7 @@ exports.userController = exports.refreshAccessToken = void 0;
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const catchAsyncHandeller_1 = require("../../utils/catchAsyncHandeller");
 const user_sevices_1 = require("./user.sevices");
-const generateTokens_1 = require("../../utils/generateTokens/generateTokens");
+const generateTokens_1 = require("../../utils/generateTokens");
 const config_1 = require("../../config");
 const logger_1 = require("../../utils/logger");
 const appError_1 = require("../../error/appError");
