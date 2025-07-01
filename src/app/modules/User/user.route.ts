@@ -1,16 +1,17 @@
 import { Router } from "express";
 import { userController } from "./user.controller";
+import { generalLimiter, strictLimiter } from "../../middleware/rateLimiter";
 
 const router = Router();
 
-router.post("/signup", userController.regestrationUser);
-router.post("/login", userController.loginUser);
-router.post("/refresh-token", userController.refreshAccessToken);
+router.post("/signup", generalLimiter, userController.regestrationUser);
+router.post("/login", strictLimiter, userController.loginUser);
+router.post("/refresh-token", strictLimiter, userController.refreshAccessToken);
 
-// RESTful route group
-router.get("/", userController.getAllUsers);         // GET /api/users
-router.get("/:id", userController.getSingleUser);    // GET /api/users/:id
-router.patch("/:id", userController.updateUser);     // PATCH /api/users/:id
-router.delete("/:id", userController.deleteUser);    // DELETE /api/users/:id
-//  Export the routes
+// RESTful routes with generalLimiter (or no limiter if you want)
+router.get("/", generalLimiter, userController.getAllUsers);
+router.get("/:id", generalLimiter, userController.getSingleUser);
+router.patch("/:id", generalLimiter, userController.updateUser);
+router.delete("/:id", generalLimiter, userController.deleteUser);
+
 export const userRoute = router;

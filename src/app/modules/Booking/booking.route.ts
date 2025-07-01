@@ -1,18 +1,21 @@
 import express from "express";
 import { bookingController } from "./booking.controller";
+import { strictLimiter } from "../../middleware/rateLimiter";
 
 const router = express.Router();
 
-// ✅ Create a new booking
-router.post("/",  bookingController.initiateBooking);
 
-// ✅ Cancel booking (better: PATCH + ID)
-router.patch("/:id",  bookingController.cancelBooking);
+router.post("/",strictLimiter,bookingController.initiateBooking
+);
 
-// ✅ Get all bookings (filter by query)
-router.get("/",  bookingController.getFilteredBookings);
 
-// ✅ Get booking by ID (or check availability if that's the actual intent)
+router.patch("/:id",strictLimiter,bookingController.cancelBooking
+);
+
+
+router.get("/", bookingController.getFilteredBookings);
+
+
 router.get("/:id", bookingController.checkAvailableRoomsById);
 
-export const bookingRoute= router;
+export const bookingRoute = router;

@@ -4,17 +4,13 @@ import mongoose from "mongoose";
 import PaymentModel from "./payment.schema";
 import { PaymentStatus } from "./payment.interface";
 import { BookingStatus } from "../Booking/booking.interface";
-
-
-
-
-
-
-
+import sanitize from "mongo-sanitize";
 
 // ======================================================================Payment Verify with Success======================================================================
+const paymentVerify = async (transactionIdRaw: string) => {
+  // sanitize input
+  const transactionId = sanitize(transactionIdRaw);
 
- const paymentVerify = async (transactionId: string) => {
   const session = await mongoose.startSession();
   session.startTransaction();
 
@@ -65,8 +61,10 @@ import { BookingStatus } from "../Booking/booking.interface";
   }
 };
 
-// ===============================================================Payment Faild===================================================================
-const paymentFail = async (transactionId: string) => {
+// ===============================================================Payment Failed===================================================================
+const paymentFail = async (transactionIdRaw: string) => {
+  const transactionId = sanitize(transactionIdRaw);
+
   const session = await mongoose.startSession();
   session.startTransaction();
 
@@ -119,7 +117,9 @@ const paymentFail = async (transactionId: string) => {
 };
 
 // ===============================================================Payment Cancel===================================================================
- const paymentCancel = async (transactionId: string) => {
+const paymentCancel = async (transactionIdRaw: string) => {
+  const transactionId = sanitize(transactionIdRaw);
+
   const session = await mongoose.startSession();
   session.startTransaction();
 
@@ -171,15 +171,9 @@ const paymentFail = async (transactionId: string) => {
   }
 };
 
-
-
-
 // =====================Export services=============================
-
 export const paymentServices = {
   paymentVerify,
   paymentFail,
   paymentCancel
-
-
 };

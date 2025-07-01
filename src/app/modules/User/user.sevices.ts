@@ -1,4 +1,3 @@
-
 import { envVariable } from "../../config";
 import { AppError } from "../../error/appError";
 import { logger } from "../../utils/logger";
@@ -6,12 +5,14 @@ import { IUser } from "./user.interface";
 
 import jwt from "jsonwebtoken";
 import UserModel from "./user.schema";
+import sanitize from "mongo-sanitize";
 
-
-//======================================================== Regitration ===================================================================
+//======================================================== Registration ===================================================================
 const registerUserIntoDb = async (body: IUser) => {
+  const cleanBody = sanitize(body);
+
   // Check if user already exists by email
-  const isUserExist = await UserModel.findOne({ email: body.email });
+  const isUserExist = await UserModel.findOne({ email: cleanBody.email });
 
   if (isUserExist) {
     logger.warn("⚠️ Registration failed: User already exists");
@@ -19,15 +20,17 @@ const registerUserIntoDb = async (body: IUser) => {
   }
 
   // Create new user - password hashing automatically handled by pre('save') middleware
-  const newUser = await UserModel.create(body);
+  const newUser = await UserModel.create(cleanBody);
 
   logger.info(`✅ New user registered: ${newUser.email}`);
   return newUser;
 };
 
-// ============================================login user==============================================
+// ============================================ Login user ==============================================
 const loginUserByEmail = async (email: string) => {
-  const isUserExist = await UserModel.findOne({ email });
+  const cleanEmail = sanitize(email);
+
+  const isUserExist = await UserModel.findOne({ email: cleanEmail });
 
   if (!isUserExist) {
     throw new AppError("User does not exist!", 404);
@@ -36,10 +39,11 @@ const loginUserByEmail = async (email: string) => {
   return isUserExist;
 };
 
-//================================find single user=============================================
-
+//================================ Find single user =============================================
 const findUserById = async (id: string) => {
-  const user = await UserModel.findById(id);
+  const cleanId = sanitize(id);
+
+  const user = await UserModel.findById(cleanId);
 
   if (!user) {
     throw new AppError("User not found!", 404);
@@ -48,19 +52,19 @@ const findUserById = async (id: string) => {
   return user;
 };
 
-// ===================================================== find all user==========================================
-
+// ===================================================== Find all users ==========================================
 const getAllUsers = async () => {
   const users = await UserModel.find().sort({ createdAt: -1 }); // latest first
   return users;
 };
 
-// =====================================================delete user=================================================
+// ===================================================== Delete user ===============================================
 const deleteUserById = async (id: string) => {
-  //  Find the user by ID
-  const user = await UserModel.findById(id);
+  const cleanId = sanitize(id);
 
-  //  If user doesn't exist
+  // Find the user by ID
+  const user = await UserModel.findById(cleanId);
+
   if (!user) {
     throw new AppError("Failed to delete user. User not found!", 404);
   }
@@ -73,12 +77,15 @@ const deleteUserById = async (id: string) => {
   return user;
 };
 
-//=========================================== update user================================================================
+//=========================================== Update user ===========================================================
 const updateUserById = async (id: string, updateData: Partial<IUser>) => {
+  const cleanId = sanitize(id);
+  const cleanUpdateData = sanitize(updateData);
+
   // Only update if the user exists and is not soft deleted
   const updatedUser = await UserModel.findOneAndUpdate(
-    { _id: id, isDeleted: false }, // 👈 condition added here
-    updateData,
+    { _id: cleanId, isDeleted: false },
+    cleanUpdateData,
     {
       new: true,
       runValidators: true,
@@ -92,24 +99,21 @@ const updateUserById = async (id: string, updateData: Partial<IUser>) => {
   return updatedUser;
 };
 
-// ======================================================refresh token ==============================================
-
+// ====================================================== Refresh token ==============================================
 export const handleRefreshToken = async (refreshToken: string) => {
-  const decoded = jwt.verify(refreshToken, envVariable.JWT_REFRESH_TOKEN_SECRET) as { id: string };
+  const cleanRefreshToken = sanitize(refreshToken);
+
+  const decoded = jwt.verify(cleanRefreshToken, envVariable.JWT_REFRESH_TOKEN_SECRET) as { id: string };
 
   const user = await UserModel.findById(decoded.id);
   if (!user) {
     throw new AppError("User not found", 404);
   }
 
-  
-
   return user;
 };
 
-
-// ============================== Export Services==========================================================
-
+// ============================== Export Services ==========================================================
 export const userServices = {
   registerUserIntoDb,
   loginUserByEmail,
@@ -119,5 +123,3 @@ export const userServices = {
   updateUserById,
   handleRefreshToken,
 };
-
-

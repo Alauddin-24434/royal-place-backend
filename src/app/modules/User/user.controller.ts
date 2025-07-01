@@ -1,7 +1,8 @@
+
+
 import { NextFunction, Request, Response } from "express";
-
 import bcrypt from "bcryptjs";
-
+import sanitize from "mongo-sanitize";
 
 import { catchAsyncHandeller } from "../../utils/catchAsyncHandeller";
 import { userServices } from "./user.sevices";
@@ -10,31 +11,24 @@ import { envVariable } from "../../config";
 import { logger } from "../../utils/logger";
 import { AppError } from "../../error/appError";
 
-//======================================================== Regitration ===================================================================
+// ================= Registration =====================
 const regestrationUser = catchAsyncHandeller(
   async (req: Request, res: Response, next: NextFunction) => {
-    const body = req.body;
+    const body = sanitize(req.body);
 
-    // Register user into DB
     const user = await userServices.registerUserIntoDb(body);
-
     const payload = { id: user._id, role: user.role };
 
-    // accessToken
     const accessToken = createAccessToken(payload);
+    const refreshToken = createRefreshToken(payload);
 
-    //refresstoken
-    const refresstoken = createRefreshToken(payload);
-
-    //  Set refresh token in secure HttpOnly cookie
-    res.cookie("refreshToken", refresstoken, {
+    res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: envVariable.ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      sameSite: envVariable.ENV === "production" ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: "/",
     });
-
-    // send response
 
     res.status(201).json({
       success: true,
@@ -47,40 +41,36 @@ const regestrationUser = catchAsyncHandeller(
   }
 );
 
-// ============================================login user==============================================
+// ================= Login ======================
 const loginUser = catchAsyncHandeller(
   async (req: Request, res: Response, next: NextFunction) => {
-    const { email, password } = req.body;
+    const email = sanitize(req.body.email);
+    const password = sanitize(req.body.password);
 
-    //  Check if user exists
     const user = await userServices.loginUserByEmail(email);
-
     if (!user) {
       logger.warn("⚠️ Login failed: User not found");
       throw new AppError("Invalid email or password", 401);
     }
 
-    //  Compare passwords
     const isPasswordMatched = await bcrypt.compare(password, user.password);
     if (!isPasswordMatched) {
       logger.warn("⚠️ Login failed: Incorrect password");
       throw new AppError("Invalid email or password", 401);
     }
 
-    // Create tokens
     const payload = { id: user._id, role: user.role };
     const accessToken = createAccessToken(payload);
     const refreshToken = createRefreshToken(payload);
 
-    //  Set refresh token in secure cookie
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: envVariable.ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      sameSite: envVariable.ENV === "production" ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: "/",
     });
 
-    //  Send response
     res.status(200).json({
       success: true,
       message: "Login successful",
@@ -92,11 +82,19 @@ const loginUser = catchAsyncHandeller(
   }
 );
 
+
+
+
+
+
+
+
+
 //================================find single user=============================================
 
 const getSingleUser = catchAsyncHandeller(
   async (req: Request, res: Response, next: NextFunction) => {
-    const { id } = req.params;
+    const id = sanitize(req.params.id);
     const user = await userServices.findUserById(id);
 
     res.status(200).json({
@@ -129,7 +127,7 @@ const getAllUsers = catchAsyncHandeller(
 // =====================================================delete user=================================================
 const deleteUser = catchAsyncHandeller(
   async (req: Request, res: Response, next: NextFunction) => {
-    const { id } = req.params;
+     const id = sanitize(req.params.id);
 
     const deletedUser = await userServices.deleteUserById(id);
 
@@ -144,8 +142,8 @@ const deleteUser = catchAsyncHandeller(
 //=========================================== update user================================================================
 const updateUser = catchAsyncHandeller(
   async (req: Request, res: Response, next: NextFunction) => {
-    const { id } = req.params;
-    const updatedData = req.body;
+   const id = sanitize(req.params.id);
+    const updatedData = sanitize(req.body);
 
     const updatedUser = await userServices.updateUserById(id, updatedData);
 
@@ -161,9 +159,10 @@ const updateUser = catchAsyncHandeller(
 
 export const refreshAccessToken = catchAsyncHandeller(
   async (req: Request, res: Response) => {
-    const refreshToken =
-      req.cookies?.refreshToken || req.headers["x-refresh-token"];
-
+   
+    const refreshTokenRaw = req.cookies?.refreshToken || req.headers["x-refresh-token"];
+   
+    const refreshToken = sanitize(refreshTokenRaw);
     if (!refreshToken) {
     
       throw new AppError("Refresh token missing", 401);

@@ -19,8 +19,11 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const payment_schema_1 = __importDefault(require("./payment.schema"));
 const payment_interface_1 = require("./payment.interface");
 const booking_interface_1 = require("../Booking/booking.interface");
+const mongo_sanitize_1 = __importDefault(require("mongo-sanitize"));
 // ======================================================================Payment Verify with Success======================================================================
-const paymentVerify = (transactionId) => __awaiter(void 0, void 0, void 0, function* () {
+const paymentVerify = (transactionIdRaw) => __awaiter(void 0, void 0, void 0, function* () {
+    // sanitize input
+    const transactionId = (0, mongo_sanitize_1.default)(transactionIdRaw);
     const session = yield mongoose_1.default.startSession();
     session.startTransaction();
     try {
@@ -60,8 +63,9 @@ const paymentVerify = (transactionId) => __awaiter(void 0, void 0, void 0, funct
         throw error;
     }
 });
-// ===============================================================Payment Faild===================================================================
-const paymentFail = (transactionId) => __awaiter(void 0, void 0, void 0, function* () {
+// ===============================================================Payment Failed===================================================================
+const paymentFail = (transactionIdRaw) => __awaiter(void 0, void 0, void 0, function* () {
+    const transactionId = (0, mongo_sanitize_1.default)(transactionIdRaw);
     const session = yield mongoose_1.default.startSession();
     session.startTransaction();
     try {
@@ -107,7 +111,8 @@ const paymentFail = (transactionId) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 // ===============================================================Payment Cancel===================================================================
-const paymentCancel = (transactionId) => __awaiter(void 0, void 0, void 0, function* () {
+const paymentCancel = (transactionIdRaw) => __awaiter(void 0, void 0, void 0, function* () {
+    const transactionId = (0, mongo_sanitize_1.default)(transactionIdRaw);
     const session = yield mongoose_1.default.startSession();
     session.startTransaction();
     try {

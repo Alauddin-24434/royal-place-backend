@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { catchAsyncHandeller } from "../../utils/catchAsyncHandeller";
 import { paymentServices } from "./payment.services";
+import sanitize from "mongo-sanitize";
 
 
 
@@ -10,22 +11,15 @@ import { paymentServices } from "./payment.services";
 
 const paymentSuccess = catchAsyncHandeller(async (req: Request, res: Response) => {
     const { transactionId } = req.query;
+    const cleanTransactionId = sanitize(transactionId);
 
     try {
         const payment = await paymentServices.paymentVerify(
-            transactionId as string
+            cleanTransactionId as string
         );
 
-        const { status, pay_status, payment_type, status_title, transactionId: tran_id, amount } = payment;
+        const { payment_type, status_title, transactionId: tran_id, amount } = payment;
 
-        console.log({
-            pay_status,
-            status,
-            payment_type,
-            status_title,
-            tran_id,
-            amount
-        });
 
         // Compact Royal Place payment success page
         res.send(`
@@ -544,14 +538,14 @@ const paymentSuccess = catchAsyncHandeller(async (req: Request, res: Response) =
 
 const paymentFail = catchAsyncHandeller(async (req: Request, res: Response) => {
     const { transactionId } = req.query;
+    const cleanTransactionId = sanitize(transactionId);
 
     try {
         const payment = await paymentServices.paymentFail(
-            transactionId as string
+            cleanTransactionId as string
         );
 
-        const { payment_type, status_title, transactionId: tran_id, amount } = payment;
-
+        const { payment_type, status_title, transactionId: tran_id, amount } = payment
 
 
         // Compact Royal Place payment failure page
@@ -1122,8 +1116,9 @@ const paymentFail = catchAsyncHandeller(async (req: Request, res: Response) => {
 const paymentCancel = catchAsyncHandeller(async (req: Request, res: Response) => {
     const { transactionId } = req.query;
 
+    const cleanTransactionId = sanitize(transactionId);
 
-    const payment = await paymentServices.paymentCancel(transactionId as string);
+    const payment = await paymentServices.paymentCancel(cleanTransactionId as string);
 
     const {
         payment_type,

@@ -8,17 +8,23 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.roomController = void 0;
+const mongo_sanitize_1 = __importDefault(require("mongo-sanitize"));
 const room_services_1 = require("./room.services");
 const catchAsyncHandeller_1 = require("../../utils/catchAsyncHandeller");
 // ---------------------------Create Room-------------------------------
 const createRoom = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    // sanitize req.body
+    const cleanBody = (0, mongo_sanitize_1.default)(req.body);
     // Handle file uploads if 
     const files = req.files;
     const images = files ? files.map(file => file.path) : [];
     // Prepare room data
-    const roomData = Object.assign(Object.assign({}, req.body), { images: images });
+    const roomData = Object.assign(Object.assign({}, cleanBody), { images: images });
     const newRoom = yield room_services_1.roomService.createRoom(roomData);
     res.status(201).json({
         success: true,
@@ -37,16 +43,20 @@ const getAllRooms = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res) =>
 }));
 // -------------------------------Filter All Rooms-----------------
 const filterAllRooms = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const rooms = yield room_services_1.roomService.filterRooms(req.query);
+    // sanitize req.query
+    const cleanQuery = (0, mongo_sanitize_1.default)(req.query);
+    const rooms = yield room_services_1.roomService.filterRooms(cleanQuery);
     res.status(200).json({
         success: true,
-        message: "Rooms filter successfully",
+        message: "Rooms filtered successfully",
         data: rooms,
     });
 }));
 //------------------------------- Get Single Room---------------------
 const getRoomById = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const room = yield room_services_1.roomService.getRoomById(req.params.id);
+    // sanitize req.params.id
+    const cleanId = (0, mongo_sanitize_1.default)(req.params.id);
+    const room = yield room_services_1.roomService.getRoomById(cleanId);
     res.status(200).json({
         success: true,
         message: "Room retrieved successfully",
@@ -55,7 +65,10 @@ const getRoomById = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res) =>
 }));
 // ---------------------------------Update Room---------------------------
 const updateRoom = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const room = yield room_services_1.roomService.updateRoom(req.params.id, req.body);
+    // sanitize req.params.id and req.body
+    const cleanId = (0, mongo_sanitize_1.default)(req.params.id);
+    const cleanBody = (0, mongo_sanitize_1.default)(req.body);
+    const room = yield room_services_1.roomService.updateRoom(cleanId, cleanBody);
     res.status(200).json({
         success: true,
         message: "Room updated successfully",
@@ -64,7 +77,9 @@ const updateRoom = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res) => 
 }));
 // ------------------------------------Delete Room--------------------------------
 const deleteRoom = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const room = yield room_services_1.roomService.deleteRoom(req.params.id);
+    // sanitize req.params.id
+    const cleanId = (0, mongo_sanitize_1.default)(req.params.id);
+    const room = yield room_services_1.roomService.deleteRoom(cleanId);
     res.status(200).json({
         success: true,
         message: "Room deleted successfully",

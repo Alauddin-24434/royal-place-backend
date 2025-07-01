@@ -10,10 +10,11 @@ const uploadMiddleware_1 = __importDefault(require("../../middleware/multer/uplo
 const authenticateUser_1 = require("../../middleware/authenticateUser");
 const checkRole_1 = require("../../utils/checkRole");
 const router = (0, express_1.Router)();
-router.post("/", authenticateUser_1.authenticateUser, (0, checkRole_1.checkRole)('admin', 'receptionist'), uploadMiddleware_1.default.array("images", 5), room_controller_1.roomController.createRoom);
+const rateLimiter_1 = require("../../middleware/rateLimiter");
+router.post("/", authenticateUser_1.authenticateUser, (0, checkRole_1.checkRole)('admin', 'receptionist'), rateLimiter_1.strictLimiter, uploadMiddleware_1.default.array("images", 5), room_controller_1.roomController.createRoom);
+router.patch("/:id", authenticateUser_1.authenticateUser, (0, checkRole_1.checkRole)('admin', 'receptionist'), rateLimiter_1.strictLimiter, room_controller_1.roomController.updateRoom);
+router.delete("/:id", authenticateUser_1.authenticateUser, (0, checkRole_1.checkRole)('admin', 'receptionist'), rateLimiter_1.strictLimiter, room_controller_1.roomController.deleteRoom);
 router.get("/", room_controller_1.roomController.getAllRooms);
 router.get("/filter", room_controller_1.roomController.filterAllRooms);
 router.get("/:id", room_controller_1.roomController.getRoomById);
-router.patch("/:id", authenticateUser_1.authenticateUser, (0, checkRole_1.checkRole)('admin', 'receptionist'), room_controller_1.roomController.updateRoom);
-router.delete("/:id", authenticateUser_1.authenticateUser, (0, checkRole_1.checkRole)('admin', 'receptionist'), room_controller_1.roomController.deleteRoom);
 exports.roomRoute = router;

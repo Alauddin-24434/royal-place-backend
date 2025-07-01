@@ -14,30 +14,27 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.userController = exports.refreshAccessToken = void 0;
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const mongo_sanitize_1 = __importDefault(require("mongo-sanitize"));
 const catchAsyncHandeller_1 = require("../../utils/catchAsyncHandeller");
 const user_sevices_1 = require("./user.sevices");
 const generateTokens_1 = require("../../utils/generateTokens");
 const config_1 = require("../../config");
 const logger_1 = require("../../utils/logger");
 const appError_1 = require("../../error/appError");
-//======================================================== Regitration ===================================================================
+// ================= Registration =====================
 const regestrationUser = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const body = req.body;
-    // Register user into DB
+    const body = (0, mongo_sanitize_1.default)(req.body);
     const user = yield user_sevices_1.userServices.registerUserIntoDb(body);
     const payload = { id: user._id, role: user.role };
-    // accessToken
     const accessToken = (0, generateTokens_1.createAccessToken)(payload);
-    //refresstoken
-    const refresstoken = (0, generateTokens_1.createRefreshToken)(payload);
-    //  Set refresh token in secure HttpOnly cookie
-    res.cookie("refreshToken", refresstoken, {
+    const refreshToken = (0, generateTokens_1.createRefreshToken)(payload);
+    res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
         secure: config_1.envVariable.ENV === "production",
-        sameSite: "strict",
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        sameSite: config_1.envVariable.ENV === "production" ? "none" : "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        path: "/",
     });
-    // send response
     res.status(201).json({
         success: true,
         message: "User registered successfully",
@@ -47,33 +44,30 @@ const regestrationUser = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, re
         },
     });
 }));
-// ============================================login user==============================================
+// ================= Login ======================
 const loginUser = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const { email, password } = req.body;
-    //  Check if user exists
+    const email = (0, mongo_sanitize_1.default)(req.body.email);
+    const password = (0, mongo_sanitize_1.default)(req.body.password);
     const user = yield user_sevices_1.userServices.loginUserByEmail(email);
     if (!user) {
         logger_1.logger.warn("⚠️ Login failed: User not found");
         throw new appError_1.AppError("Invalid email or password", 401);
     }
-    //  Compare passwords
     const isPasswordMatched = yield bcryptjs_1.default.compare(password, user.password);
     if (!isPasswordMatched) {
         logger_1.logger.warn("⚠️ Login failed: Incorrect password");
         throw new appError_1.AppError("Invalid email or password", 401);
     }
-    // Create tokens
     const payload = { id: user._id, role: user.role };
     const accessToken = (0, generateTokens_1.createAccessToken)(payload);
     const refreshToken = (0, generateTokens_1.createRefreshToken)(payload);
-    //  Set refresh token in secure cookie
     res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
         secure: config_1.envVariable.ENV === "production",
-        sameSite: "strict",
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        sameSite: config_1.envVariable.ENV === "production" ? "none" : "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        path: "/",
     });
-    //  Send response
     res.status(200).json({
         success: true,
         message: "Login successful",
@@ -85,7 +79,7 @@ const loginUser = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res, next
 }));
 //================================find single user=============================================
 const getSingleUser = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id } = req.params;
+    const id = (0, mongo_sanitize_1.default)(req.params.id);
     const user = yield user_sevices_1.userServices.findUserById(id);
     res.status(200).json({
         success: true,
@@ -105,7 +99,7 @@ const getAllUsers = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res, ne
 }));
 // =====================================================delete user=================================================
 const deleteUser = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id } = req.params;
+    const id = (0, mongo_sanitize_1.default)(req.params.id);
     const deletedUser = yield user_sevices_1.userServices.deleteUserById(id);
     res.status(200).json({
         success: true,
@@ -115,8 +109,8 @@ const deleteUser = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res, nex
 }));
 //=========================================== update user================================================================
 const updateUser = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id } = req.params;
-    const updatedData = req.body;
+    const id = (0, mongo_sanitize_1.default)(req.params.id);
+    const updatedData = (0, mongo_sanitize_1.default)(req.body);
     const updatedUser = yield user_sevices_1.userServices.updateUserById(id, updatedData);
     res.status(200).json({
         success: true,
@@ -127,7 +121,8 @@ const updateUser = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res, nex
 // ======================================================refresh token ==============================================
 exports.refreshAccessToken = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
-    const refreshToken = ((_a = req.cookies) === null || _a === void 0 ? void 0 : _a.refreshToken) || req.headers["x-refresh-token"];
+    const refreshTokenRaw = ((_a = req.cookies) === null || _a === void 0 ? void 0 : _a.refreshToken) || req.headers["x-refresh-token"];
+    const refreshToken = (0, mongo_sanitize_1.default)(refreshTokenRaw);
     if (!refreshToken) {
         throw new appError_1.AppError("Refresh token missing", 401);
     }

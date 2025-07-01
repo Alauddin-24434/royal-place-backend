@@ -18,45 +18,49 @@ const appError_1 = require("../../error/appError");
 const logger_1 = require("../../utils/logger");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const user_schema_1 = __importDefault(require("./user.schema"));
-//======================================================== Regitration ===================================================================
+const mongo_sanitize_1 = __importDefault(require("mongo-sanitize"));
+//======================================================== Registration ===================================================================
 const registerUserIntoDb = (body) => __awaiter(void 0, void 0, void 0, function* () {
+    const cleanBody = (0, mongo_sanitize_1.default)(body);
     // Check if user already exists by email
-    const isUserExist = yield user_schema_1.default.findOne({ email: body.email });
+    const isUserExist = yield user_schema_1.default.findOne({ email: cleanBody.email });
     if (isUserExist) {
         logger_1.logger.warn("⚠️ Registration failed: User already exists");
         throw new appError_1.AppError("User already exists!", 400);
     }
     // Create new user - password hashing automatically handled by pre('save') middleware
-    const newUser = yield user_schema_1.default.create(body);
+    const newUser = yield user_schema_1.default.create(cleanBody);
     logger_1.logger.info(`✅ New user registered: ${newUser.email}`);
     return newUser;
 });
-// ============================================login user==============================================
+// ============================================ Login user ==============================================
 const loginUserByEmail = (email) => __awaiter(void 0, void 0, void 0, function* () {
-    const isUserExist = yield user_schema_1.default.findOne({ email });
+    const cleanEmail = (0, mongo_sanitize_1.default)(email);
+    const isUserExist = yield user_schema_1.default.findOne({ email: cleanEmail });
     if (!isUserExist) {
         throw new appError_1.AppError("User does not exist!", 404);
     }
     return isUserExist;
 });
-//================================find single user=============================================
+//================================ Find single user =============================================
 const findUserById = (id) => __awaiter(void 0, void 0, void 0, function* () {
-    const user = yield user_schema_1.default.findById(id);
+    const cleanId = (0, mongo_sanitize_1.default)(id);
+    const user = yield user_schema_1.default.findById(cleanId);
     if (!user) {
         throw new appError_1.AppError("User not found!", 404);
     }
     return user;
 });
-// ===================================================== find all user==========================================
+// ===================================================== Find all users ==========================================
 const getAllUsers = () => __awaiter(void 0, void 0, void 0, function* () {
     const users = yield user_schema_1.default.find().sort({ createdAt: -1 }); // latest first
     return users;
 });
-// =====================================================delete user=================================================
+// ===================================================== Delete user ===============================================
 const deleteUserById = (id) => __awaiter(void 0, void 0, void 0, function* () {
-    //  Find the user by ID
-    const user = yield user_schema_1.default.findById(id);
-    //  If user doesn't exist
+    const cleanId = (0, mongo_sanitize_1.default)(id);
+    // Find the user by ID
+    const user = yield user_schema_1.default.findById(cleanId);
     if (!user) {
         throw new appError_1.AppError("Failed to delete user. User not found!", 404);
     }
@@ -65,11 +69,12 @@ const deleteUserById = (id) => __awaiter(void 0, void 0, void 0, function* () {
     yield user.save();
     return user;
 });
-//=========================================== update user================================================================
+//=========================================== Update user ===========================================================
 const updateUserById = (id, updateData) => __awaiter(void 0, void 0, void 0, function* () {
+    const cleanId = (0, mongo_sanitize_1.default)(id);
+    const cleanUpdateData = (0, mongo_sanitize_1.default)(updateData);
     // Only update if the user exists and is not soft deleted
-    const updatedUser = yield user_schema_1.default.findOneAndUpdate({ _id: id, isDeleted: false }, // 👈 condition added here
-    updateData, {
+    const updatedUser = yield user_schema_1.default.findOneAndUpdate({ _id: cleanId, isDeleted: false }, cleanUpdateData, {
         new: true,
         runValidators: true,
     });
@@ -78,9 +83,10 @@ const updateUserById = (id, updateData) => __awaiter(void 0, void 0, void 0, fun
     }
     return updatedUser;
 });
-// ======================================================refresh token ==============================================
+// ====================================================== Refresh token ==============================================
 const handleRefreshToken = (refreshToken) => __awaiter(void 0, void 0, void 0, function* () {
-    const decoded = jsonwebtoken_1.default.verify(refreshToken, config_1.envVariable.JWT_REFRESH_TOKEN_SECRET);
+    const cleanRefreshToken = (0, mongo_sanitize_1.default)(refreshToken);
+    const decoded = jsonwebtoken_1.default.verify(cleanRefreshToken, config_1.envVariable.JWT_REFRESH_TOKEN_SECRET);
     const user = yield user_schema_1.default.findById(decoded.id);
     if (!user) {
         throw new appError_1.AppError("User not found", 404);
@@ -88,7 +94,7 @@ const handleRefreshToken = (refreshToken) => __awaiter(void 0, void 0, void 0, f
     return user;
 });
 exports.handleRefreshToken = handleRefreshToken;
-// ============================== Export Services==========================================================
+// ============================== Export Services ==========================================================
 exports.userServices = {
     registerUserIntoDb,
     loginUserByEmail,

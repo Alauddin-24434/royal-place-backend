@@ -8,24 +8,21 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.paymentController = void 0;
 const catchAsyncHandeller_1 = require("../../utils/catchAsyncHandeller");
 const payment_services_1 = require("./payment.services");
+const mongo_sanitize_1 = __importDefault(require("mongo-sanitize"));
 // ======================================================================Payment Verify with Success======================================================================
 const paymentSuccess = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { transactionId } = req.query;
+    const cleanTransactionId = (0, mongo_sanitize_1.default)(transactionId);
     try {
-        const payment = yield payment_services_1.paymentServices.paymentVerify(transactionId);
-        const { status, pay_status, payment_type, status_title, transactionId: tran_id, amount } = payment;
-        console.log({
-            pay_status,
-            status,
-            payment_type,
-            status_title,
-            tran_id,
-            amount
-        });
+        const payment = yield payment_services_1.paymentServices.paymentVerify(cleanTransactionId);
+        const { payment_type, status_title, transactionId: tran_id, amount } = payment;
         // Compact Royal Place payment success page
         res.send(`
       <!DOCTYPE html>
@@ -540,8 +537,9 @@ const paymentSuccess = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res)
 // ===============================================================Payment Faild===================================================================
 const paymentFail = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { transactionId } = req.query;
+    const cleanTransactionId = (0, mongo_sanitize_1.default)(transactionId);
     try {
-        const payment = yield payment_services_1.paymentServices.paymentFail(transactionId);
+        const payment = yield payment_services_1.paymentServices.paymentFail(cleanTransactionId);
         const { payment_type, status_title, transactionId: tran_id, amount } = payment;
         // Compact Royal Place payment failure page
         res.send(`
@@ -1111,7 +1109,8 @@ const paymentFail = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res) =>
 // ===============================================================Payment Cancel===================================================================
 const paymentCancel = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { transactionId } = req.query;
-    const payment = yield payment_services_1.paymentServices.paymentCancel(transactionId);
+    const cleanTransactionId = (0, mongo_sanitize_1.default)(transactionId);
+    const payment = yield payment_services_1.paymentServices.paymentCancel(cleanTransactionId);
     const { payment_type, status_title, transactionId: tran_id, amount, pay_status, status, } = payment;
     res.status(200).json({
         success: true,
