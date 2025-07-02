@@ -127,7 +127,7 @@ const getAllUsers = catchAsyncHandeller(
 // =====================================================delete user=================================================
 const deleteUser = catchAsyncHandeller(
   async (req: Request, res: Response, next: NextFunction) => {
-     const id = sanitize(req.params.id);
+    const id = sanitize(req.params.id);
 
     const deletedUser = await userServices.deleteUserById(id);
 
@@ -142,16 +142,41 @@ const deleteUser = catchAsyncHandeller(
 //=========================================== update user================================================================
 const updateUser = catchAsyncHandeller(
   async (req: Request, res: Response, next: NextFunction) => {
-   const id = sanitize(req.params.id);
-    const updatedData = sanitize(req.body);
 
-    const updatedUser = await userServices.updateUserById(id, updatedData);
+    const id = sanitize(req.params.id);
 
-    res.status(200).json({
-      success: true,
-      message: "User updated successfully",
-      data: updatedUser,
+    let updatedData;
+
+    const imageUrl = req.file?.path;
+    if (imageUrl) {
+      updatedData = sanitize({ ...req.body, image: imageUrl });
+    } else {
+      updatedData = sanitize(req.body);
+    }
+
+
+    const user = await userServices.updateUserById(id, updatedData);
+    const payload = { id: user._id, role: user.role };
+    const refreshToken = createRefreshToken(payload);
+    const accessToken = createAccessToken(payload);
+
+    // ⏬ Send refresh token via cookie or header
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: envVariable.ENV === "production",
+      sameSite: envVariable.ENV === "production" ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: "/",
     });
+    res.status(200)
+      .json({
+        success: true,
+        message: "User updated successfully",
+        data: {
+          accessToken,
+          user,
+        },
+      });
   }
 );
 
@@ -159,12 +184,12 @@ const updateUser = catchAsyncHandeller(
 
 export const refreshAccessToken = catchAsyncHandeller(
   async (req: Request, res: Response) => {
-   
+
     const refreshTokenRaw = req.cookies?.refreshToken || req.headers["x-refresh-token"];
-   
+
     const refreshToken = sanitize(refreshTokenRaw);
     if (!refreshToken) {
-    
+
       throw new AppError("Refresh token missing", 401);
     }
 

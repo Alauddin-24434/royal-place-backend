@@ -9,7 +9,7 @@ export enum PaymentStatus {
 
 
 export interface IPayment  {
-  userId: Types.ObjectId;
+  userId: Types.ObjectId; 
   bookingId: Types.ObjectId;
   amount: number;
   paymentMethod: string;
@@ -19,3 +19,12 @@ export interface IPayment  {
   updatedAt: Date;
 }
 
+
+
+
+export interface GetPaymentsOptions {
+  page?: number;
+  limit?: number;
+  status?: string;       // "pending", "completed", "failed", "refunded", "cancel"
+  searchTerm?: string;   // search by guest, transactionId or email
+}

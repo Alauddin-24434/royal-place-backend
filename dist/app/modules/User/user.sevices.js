@@ -73,6 +73,7 @@ const deleteUserById = (id) => __awaiter(void 0, void 0, void 0, function* () {
 const updateUserById = (id, updateData) => __awaiter(void 0, void 0, void 0, function* () {
     const cleanId = (0, mongo_sanitize_1.default)(id);
     const cleanUpdateData = (0, mongo_sanitize_1.default)(updateData);
+    console.log(cleanId, cleanUpdateData);
     // Only update if the user exists and is not soft deleted
     const updatedUser = yield user_schema_1.default.findOneAndUpdate({ _id: cleanId, isDeleted: false }, cleanUpdateData, {
         new: true,

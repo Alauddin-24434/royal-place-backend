@@ -20,3 +20,12 @@ export interface IUser extends Document {
   
 }
 
+
+
+
+// update interfce 
+export interface IUpdateUserInput {
+  name?: string;
+  phone?: string;
+  image?: string;
+}

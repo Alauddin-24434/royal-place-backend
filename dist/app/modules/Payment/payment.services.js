@@ -157,9 +157,40 @@ const paymentCancel = (transactionIdRaw) => __awaiter(void 0, void 0, void 0, fu
         throw error;
     }
 });
-// =====================Export services=============================
+const getPayments = (options) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const page = options.page && options.page > 0 ? options.page : 1;
+    const limit = options.limit && options.limit > 0 && options.limit <= 100 ? options.limit : 10;
+    const status = ((_a = options.status) === null || _a === void 0 ? void 0 : _a.toLowerCase()) || "all";
+    const searchTerm = options.searchTerm ? (0, mongo_sanitize_1.default)(options.searchTerm) : "";
+    const filter = {};
+    if (status !== "all") {
+        filter.status = status;
+    }
+    if (searchTerm) {
+        filter.$or = [
+            { guest: { $regex: searchTerm, $options: "i" } },
+            { transactionId: { $regex: searchTerm, $options: "i" } },
+            { email: { $regex: searchTerm, $options: "i" } },
+        ];
+    }
+    const total = yield payment_schema_1.default.countDocuments(filter);
+    const pages = Math.ceil(total / limit);
+    const data = yield payment_schema_1.default.find(filter)
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean();
+    return {
+        data,
+        total,
+        page,
+        pages,
+    };
+});
 exports.paymentServices = {
     paymentVerify,
     paymentFail,
-    paymentCancel
+    paymentCancel,
+    getPayments,
 };

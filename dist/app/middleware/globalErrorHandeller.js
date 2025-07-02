@@ -16,7 +16,7 @@ const globalErrorHandler = (err, req, res, next) => {
     let errorName = err.name || "Error";
     let details = null;
     // Log the error
-    logger_1.logger.error(`[${req.method}] ${req.originalUrl} - ${statusCode} - ${message}`);
+    // logger.error(`[${req.method}] ${req.originalUrl} - ${statusCode} - ${message}`);
     if (config_1.envVariable.ENV === "development" && err.stack) {
         logger_1.logger.debug(err.stack);
     }

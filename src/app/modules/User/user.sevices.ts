@@ -1,7 +1,7 @@
 import { envVariable } from "../../config";
 import { AppError } from "../../error/appError";
 import { logger } from "../../utils/logger";
-import { IUser } from "./user.interface";
+import { IUpdateUserInput, IUser } from "./user.interface";
 
 import jwt from "jsonwebtoken";
 import UserModel from "./user.schema";
@@ -78,10 +78,10 @@ const deleteUserById = async (id: string) => {
 };
 
 //=========================================== Update user ===========================================================
-const updateUserById = async (id: string, updateData: Partial<IUser>) => {
+const updateUserById = async (id: string, updateData: IUpdateUserInput) => {
   const cleanId = sanitize(id);
   const cleanUpdateData = sanitize(updateData);
-
+console.log( cleanId, cleanUpdateData);
   // Only update if the user exists and is not soft deleted
   const updatedUser = await UserModel.findOneAndUpdate(
     { _id: cleanId, isDeleted: false },

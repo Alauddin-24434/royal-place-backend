@@ -2,7 +2,7 @@ import { verifyPayment } from "../../utils/payment.utills";
 import BookingModel from "../Booking/booking.schema";
 import mongoose from "mongoose";
 import PaymentModel from "./payment.schema";
-import { PaymentStatus } from "./payment.interface";
+import { GetPaymentsOptions, PaymentStatus } from "./payment.interface";
 import { BookingStatus } from "../Booking/booking.interface";
 import sanitize from "mongo-sanitize";
 
@@ -171,9 +171,47 @@ const paymentCancel = async (transactionIdRaw: string) => {
   }
 };
 
-// =====================Export services=============================
+
+const getPayments = async (options: GetPaymentsOptions) => {
+  const page = options.page && options.page > 0 ? options.page : 1;
+  const limit = options.limit && options.limit > 0 && options.limit <= 100 ? options.limit : 10;
+  const status = options.status?.toLowerCase() || "all";
+  const searchTerm = options.searchTerm ? sanitize(options.searchTerm) : "";
+
+  const filter: any = {};
+
+  if (status !== "all") {
+    filter.status = status;
+  }
+
+  if (searchTerm) {
+    filter.$or = [
+      { guest: { $regex: searchTerm, $options: "i" } },
+      { transactionId: { $regex: searchTerm, $options: "i" } },
+      { email: { $regex: searchTerm, $options: "i" } },
+    ];
+  }
+
+  const total = await PaymentModel.countDocuments(filter);
+  const pages = Math.ceil(total / limit);
+
+  const data = await PaymentModel.find(filter)
+    .sort({ createdAt: -1 })
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .lean();
+
+  return {
+    data,
+    total,
+    page,
+    pages,
+  };
+};
+
 export const paymentServices = {
   paymentVerify,
   paymentFail,
-  paymentCancel
+  paymentCancel,
+  getPayments,
 };

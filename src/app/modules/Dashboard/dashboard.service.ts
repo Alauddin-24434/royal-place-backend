@@ -63,23 +63,70 @@ const getGuestOverview = async (userId: string) => {
     bookingStatus: BookingStatus.Booked,
   })
     .sort({ createdAt: -1 })
-    .select("rooms bookingStatus totalAmount transactionId")
+    .select("rooms bookingStatus totalAmount transactionId createdAt")
+    .populate("rooms.roomId", "title") // ✅ populate to get room title
     .lean();
 
-  const stats = upcomingBooking
-    ? [
-        {
-          title: "Your Upcoming Booking",
-          value: upcomingBooking.rooms?.[0]?.roomId.toString() || "N/A",
-          change: "",
-          icon: "Bed",
-          color: "text-emerald-400",
-        },
-      ]
-    : [];
+  // মোট বুকিং সংখ্যা
+  const totalBookings = await BookingModel.countDocuments({ userId });
 
-  return {  role: "guest", stats, recentBookings: []  };
+  // মোট পেমেন্ট পরিমাণ (booked বা completed স্টেটাস)
+  const totalPaidAmountAgg = await BookingModel.aggregate([
+    {
+      $match: {
+        userId,
+        bookingStatus: { $in: [BookingStatus.Booked, BookingStatus.Booked] },
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        totalAmount: { $sum: "$totalAmount" },
+      },
+    },
+  ]);
+
+  const totalPaidAmount = totalPaidAmountAgg[0]?.totalAmount || 0;
+
+  // সর্বশেষ ৫টি বুকিং
+  const recentBookings = await BookingModel.find({ userId })
+    .sort({ createdAt: -1 })
+    .limit(5)
+    .select("rooms totalAmount transactionId bookingStatus createdAt")
+    .populate("rooms.roomId", "title") // recent bookings room titles too
+    .lean();
+
+  const stats = [
+    {
+      title: "Upcoming Booking Room",
+      value:
+        typeof upcomingBooking?.rooms?.[0]?.roomId === "object" && "title" in (upcomingBooking?.rooms?.[0]?.roomId || {})
+          ? (upcomingBooking?.rooms?.[0]?.roomId as { title?: string }).title || "N/A"
+          : "N/A",
+      icon: "Bed",
+      color: "text-emerald-400",
+    },
+    {
+      title: "Total Bookings",
+      value: totalBookings.toString(),
+      icon: "Calendar",
+      color: "text-sky-500",
+    },
+    {
+      title: "Total Paid",
+      value: `$${totalPaidAmount}`,
+      icon: "DollarSign",
+      color: "text-yellow-400",
+    },
+  ];
+
+  return {
+    role: "guest",
+    stats,
+    recentBookings,
+  };
 };
+
 
 
 

@@ -1143,9 +1143,23 @@ const paymentCancel = catchAsyncHandeller(async (req: Request, res: Response) =>
     });
 });
 
+const getPaymentsHandler = catchAsyncHandeller(async (req, res) => {
+    const { page, limit, status, searchTerm } = req.query;
+
+    const result = await paymentServices.getPayments({
+        page: Number(page) || 1,
+        limit: Number(limit) || 10,
+        status: typeof status === "string" ? status : "all",
+        searchTerm: typeof searchTerm === "string" ? searchTerm : "",
+    });
+
+    res.status(200).json(result);
+});
+
+
 // ======================Export controller=============================
 export const paymentController = {
-
+    getPaymentsHandler,
     paymentSuccess,
     paymentFail,
     paymentCancel

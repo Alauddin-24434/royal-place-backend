@@ -1125,8 +1125,19 @@ const paymentCancel = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res) 
         },
     });
 }));
+const getPaymentsHandler = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { page, limit, status, searchTerm } = req.query;
+    const result = yield payment_services_1.paymentServices.getPayments({
+        page: Number(page) || 1,
+        limit: Number(limit) || 10,
+        status: typeof status === "string" ? status : "all",
+        searchTerm: typeof searchTerm === "string" ? searchTerm : "",
+    });
+    res.status(200).json(result);
+}));
 // ======================Export controller=============================
 exports.paymentController = {
+    getPaymentsHandler,
     paymentSuccess,
     paymentFail,
     paymentCancel

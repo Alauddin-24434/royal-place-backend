@@ -65,26 +65,67 @@ const getReceptionistOverview = () => __awaiter(void 0, void 0, void 0, function
 });
 // ===== Guest Overview =====
 const getGuestOverview = (userId) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+    var _a, _b, _c, _d, _e, _f, _g;
     const upcomingBooking = yield booking_schema_1.default.findOne({
         userId,
         bookingStatus: booking_interface_1.BookingStatus.Booked,
     })
         .sort({ createdAt: -1 })
-        .select("rooms bookingStatus totalAmount transactionId")
+        .select("rooms bookingStatus totalAmount transactionId createdAt")
+        .populate("rooms.roomId", "title") // ✅ populate to get room title
         .lean();
-    const stats = upcomingBooking
-        ? [
-            {
-                title: "Your Upcoming Booking",
-                value: ((_b = (_a = upcomingBooking.rooms) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.roomId.toString()) || "N/A",
-                change: "",
-                icon: "Bed",
-                color: "text-emerald-400",
+    // মোট বুকিং সংখ্যা
+    const totalBookings = yield booking_schema_1.default.countDocuments({ userId });
+    // মোট পেমেন্ট পরিমাণ (booked বা completed স্টেটাস)
+    const totalPaidAmountAgg = yield booking_schema_1.default.aggregate([
+        {
+            $match: {
+                userId,
+                bookingStatus: { $in: [booking_interface_1.BookingStatus.Booked, booking_interface_1.BookingStatus.Booked] },
             },
-        ]
-        : [];
-    return { role: "guest", stats, recentBookings: [] };
+        },
+        {
+            $group: {
+                _id: null,
+                totalAmount: { $sum: "$totalAmount" },
+            },
+        },
+    ]);
+    const totalPaidAmount = ((_a = totalPaidAmountAgg[0]) === null || _a === void 0 ? void 0 : _a.totalAmount) || 0;
+    // সর্বশেষ ৫টি বুকিং
+    const recentBookings = yield booking_schema_1.default.find({ userId })
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .select("rooms totalAmount transactionId bookingStatus createdAt")
+        .populate("rooms.roomId", "title") // recent bookings room titles too
+        .lean();
+    const stats = [
+        {
+            title: "Upcoming Booking Room",
+            value: typeof ((_c = (_b = upcomingBooking === null || upcomingBooking === void 0 ? void 0 : upcomingBooking.rooms) === null || _b === void 0 ? void 0 : _b[0]) === null || _c === void 0 ? void 0 : _c.roomId) === "object" && "title" in (((_e = (_d = upcomingBooking === null || upcomingBooking === void 0 ? void 0 : upcomingBooking.rooms) === null || _d === void 0 ? void 0 : _d[0]) === null || _e === void 0 ? void 0 : _e.roomId) || {})
+                ? ((_g = (_f = upcomingBooking === null || upcomingBooking === void 0 ? void 0 : upcomingBooking.rooms) === null || _f === void 0 ? void 0 : _f[0]) === null || _g === void 0 ? void 0 : _g.roomId).title || "N/A"
+                : "N/A",
+            icon: "Bed",
+            color: "text-emerald-400",
+        },
+        {
+            title: "Total Bookings",
+            value: totalBookings.toString(),
+            icon: "Calendar",
+            color: "text-sky-500",
+        },
+        {
+            title: "Total Paid",
+            value: `$${totalPaidAmount}`,
+            icon: "DollarSign",
+            color: "text-yellow-400",
+        },
+    ];
+    return {
+        role: "guest",
+        stats,
+        recentBookings,
+    };
 });
 // ===== Main dispatcher function =====
 const dashboardOverviewByRole = (role, userId) => __awaiter(void 0, void 0, void 0, function* () {

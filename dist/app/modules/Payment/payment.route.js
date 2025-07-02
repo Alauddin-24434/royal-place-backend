@@ -11,4 +11,5 @@ const router = express_1.default.Router();
 router.post("/verify-payment", rateLimiter_1.strictLimiter, payment_controller_1.paymentController.paymentSuccess);
 router.post("/fail", rateLimiter_1.strictLimiter, payment_controller_1.paymentController.paymentFail);
 router.post("/cancel", rateLimiter_1.strictLimiter, payment_controller_1.paymentController.paymentCancel);
+router.get('/', payment_controller_1.paymentController.getPaymentsHandler);
 exports.paymentRoute = router;

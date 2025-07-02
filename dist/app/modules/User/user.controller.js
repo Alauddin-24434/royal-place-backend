@@ -109,13 +109,36 @@ const deleteUser = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res, nex
 }));
 //=========================================== update user================================================================
 const updateUser = (0, catchAsyncHandeller_1.catchAsyncHandeller)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     const id = (0, mongo_sanitize_1.default)(req.params.id);
-    const updatedData = (0, mongo_sanitize_1.default)(req.body);
-    const updatedUser = yield user_sevices_1.userServices.updateUserById(id, updatedData);
-    res.status(200).json({
+    let updatedData;
+    const imageUrl = (_a = req.file) === null || _a === void 0 ? void 0 : _a.path;
+    if (imageUrl) {
+        updatedData = (0, mongo_sanitize_1.default)(Object.assign(Object.assign({}, req.body), { image: imageUrl }));
+    }
+    else {
+        updatedData = (0, mongo_sanitize_1.default)(req.body);
+    }
+    const user = yield user_sevices_1.userServices.updateUserById(id, updatedData);
+    const payload = { id: user._id, role: user.role };
+    const refreshToken = (0, generateTokens_1.createRefreshToken)(payload);
+    const accessToken = (0, generateTokens_1.createAccessToken)(payload);
+    // ⏬ Send refresh token via cookie or header
+    res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: config_1.envVariable.ENV === "production",
+        sameSite: config_1.envVariable.ENV === "production" ? "none" : "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        path: "/",
+    });
+    res.status(200)
+        .json({
         success: true,
         message: "User updated successfully",
-        data: updatedUser,
+        data: {
+            accessToken,
+            user,
+        },
     });
 }));
 // ======================================================refresh token ==============================================
