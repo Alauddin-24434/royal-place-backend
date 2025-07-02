@@ -42,7 +42,7 @@ const getAllRooms = async () => {
 const filterRooms = async (queryParams: any) => {
   const cleanQuery = sanitize(queryParams); // sanitize query params
 
-  const { search: searchTerm, type, currentPrice, page = 1, limit = 10 } = cleanQuery;
+  const { searchTerm, type, currentPrice, page = 1, limit = 10 } = cleanQuery;
 
   const skip = (Number(page) - 1) * Number(limit);
 
