@@ -16,6 +16,7 @@ router.patch("/:id",strictLimiter,bookingController.cancelBooking
 router.get("/", bookingController.getFilteredBookings);
 
 
-router.get("/check/:id", bookingController.checkAvailableRoomsById);
+router.get("/:roomId", bookingController.checkAvailableRoomsById);
+router.get("/userId/:id", bookingController.checkbookingRoomsByUserId);
 
 export const bookingRoute = router;

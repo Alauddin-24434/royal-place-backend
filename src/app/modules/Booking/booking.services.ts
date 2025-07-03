@@ -153,7 +153,7 @@ const bookingInitialization = async (bookingData: IBooking) => {
 };
 
 // ======================================= Get Booked Dates For Room =================================
-export const getBookedDatesForRoom = async (roomId: string) => {
+ const getBookedDatesForRoomByRoomId = async (roomId: string) => {
   if (!roomId || !mongoose.Types.ObjectId.isValid(roomId)) {
     throw new AppError("Invalid or missing Room ID", 400);
   }
@@ -168,25 +168,25 @@ export const getBookedDatesForRoom = async (roomId: string) => {
   const detailBookedDates: { checkInDate: string; checkOutDate: string }[] = [];
   const bookedDatesSet = new Set<string>();
 
-for (const booking of bookings) {
-  for (const room of booking.rooms) {
-    if (
-      room.roomId.toString() === roomId &&
-      dayjs(room.checkOutDate).isSameOrAfter(today)
-    ) {
-      detailBookedDates.push({
-        checkInDate: dayjs(room.checkInDate).format("YYYY-MM-DD"),
-        checkOutDate: dayjs(room.checkOutDate).format("YYYY-MM-DD"),
-      });
+  for (const booking of bookings) {
+    for (const room of booking.rooms) {
+      if (
+        room.roomId.toString() === roomId &&
+        dayjs(room.checkOutDate).isSameOrAfter(today)
+      ) {
+        detailBookedDates.push({
+          checkInDate: dayjs(room.checkInDate).format("YYYY-MM-DD"),
+          checkOutDate: dayjs(room.checkOutDate).format("YYYY-MM-DD"),
+        });
 
-      const datesInRange = getDateRangeArray(
-        dayjs(room.checkInDate).format("YYYY-MM-DD"),
-        dayjs(room.checkOutDate).format("YYYY-MM-DD")
-      );
-      datesInRange.forEach((date) => bookedDatesSet.add(date));
+        const datesInRange = getDateRangeArray(
+          dayjs(room.checkInDate).format("YYYY-MM-DD"),
+          dayjs(room.checkOutDate).format("YYYY-MM-DD")
+        );
+        datesInRange.forEach((date) => bookedDatesSet.add(date));
+      }
     }
   }
-}
 
 
   return {
@@ -194,6 +194,79 @@ for (const booking of bookings) {
     bookedDates: Array.from(bookedDatesSet).sort(),
   };
 };
+
+
+// ======================================= Get Booked rooms By User ID =================================
+ const getBookedRoomsByUserId = async (userId: string) => {
+
+  if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+    throw new AppError("Invalid or missing User ID", 400);
+  }
+
+  const bookings = await BookingModel.find({ userId })
+    .populate("rooms.roomId")
+    .sort({ createdAt: -1 });
+
+  return bookings;
+}
+
+// const getBookedRoomsByUserId = async (userId: string) => {
+//   if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+//     throw new AppError("Invalid or missing User ID", 400);
+//   }
+
+//   // Find bookings and populate rooms.roomId
+//   const bookings = await BookingModel.find({ userId })
+//     .populate("rooms.roomId")
+//     .sort({ createdAt: -1 });
+
+//   if (!bookings.length) {
+//     return {
+//       guestName: null,
+//       detailBookedDates: [],
+//     };
+//   }
+
+//   const guestName = bookings[0].name;
+
+//   const detailBookedDates: {
+//     _id: string;
+//     title: string;
+//     amount: number;
+//     nights: number;
+//     checkInDate: string;
+//     checkOutDate: string;
+//     bookingStatus: string;
+//   }[] = [];
+
+//   for (const booking of bookings) {
+//     for (const room of booking.rooms) {
+//       if (room.checkInDate && room.checkOutDate) {
+//         const roomId = room.roomId;
+//         const title = isRoomPopulated(roomId)
+//           ? roomId.title
+//           : "Untitled Room";
+
+//         detailBookedDates.push({
+//           _id: booking._id.toString(),
+//           title,
+//           nights: dayjs(room.checkOutDate).diff(dayjs(room.checkInDate), "day"),
+//           amount: booking.totalAmount,
+//           checkInDate: dayjs(room.checkInDate).format("YYYY-MM-DD"),
+//           checkOutDate: dayjs(room.checkOutDate).format("YYYY-MM-DD"),
+//           bookingStatus: booking.bookingStatus,
+//         });
+
+//       }
+//     }
+//   }
+
+//   return {
+//     guestName,
+//     detailBookedDates,
+//   };
+// };
+
 
 // ======================================= Filter Bookings ============================================
 const filterBookings = async (queryParams: any) => {
@@ -250,7 +323,7 @@ const filterBookings = async (queryParams: any) => {
 
 
 // ========================================= Cancel Booking ============================================
-export const cancelBookingService = async (transactionId: string) => {
+ const cancelBookingService = async (transactionId: string) => {
   const session = await mongoose.startSession();
   session.startTransaction();
 
@@ -306,7 +379,8 @@ export const cancelBookingService = async (transactionId: string) => {
 // ======================== Export Services =============================
 export const bookingServices = {
   bookingInitialization,
-  getBookedDatesForRoom,
+  getBookedDatesForRoomByRoomId,
   cancelBookingService,
   filterBookings,
+  getBookedRoomsByUserId 
 };

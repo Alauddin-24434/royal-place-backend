@@ -22,13 +22,30 @@ const initiateBooking = catchAsyncHandeller(async (req: Request, res: Response) 
 // ========================================Avalabe rooms For Booking=================================================
 
 const checkAvailableRoomsById = catchAsyncHandeller(async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const blockedDates = await bookingServices.getBookedDatesForRoom(id);
+  const { roomId } = req.params;
+  const blockedDates = await bookingServices.getBookedDatesForRoomByRoomId(roomId);
 
   res.status(200).json({
     success: true,
 
-    data: blockedDates, 
+    data: blockedDates,
+  });
+
+
+
+}
+);
+
+// ======================================== chek booking rooms by user id=================================================
+
+const checkbookingRoomsByUserId = catchAsyncHandeller(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const bookedRooms = await bookingServices.getBookedRoomsByUserId(id);
+
+  res.status(200).json({
+    success: true,
+
+    data: bookedRooms,
   });
 
 
@@ -62,6 +79,7 @@ export const bookingController = {
   initiateBooking,
   checkAvailableRoomsById,
   cancelBooking,
-  getFilteredBookings
+  getFilteredBookings,
+  checkbookingRoomsByUserId
 
 };
