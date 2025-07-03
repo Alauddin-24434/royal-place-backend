@@ -11,8 +11,8 @@ const createRoom = catchAsyncHandeller(async (req: Request, res: Response) => {
   const cleanBody = sanitize(req.body);
 
   // Handle file uploads if 
-  const files= req.files as Express.Multer.File[];
-  const images= files ? files.map(file=> file.path) : [];
+  const files = req.files as Express.Multer.File[];
+  const images = files ? files.map(file => file.path) : [];
 
   // Prepare room data
   const roomData = {
@@ -91,11 +91,14 @@ const deleteRoom = catchAsyncHandeller(async (req: Request, res: Response) => {
   });
 });
 
+
+
 export const roomController = {
   createRoom,
   getAllRooms,
   getRoomById,
   updateRoom,
   deleteRoom,
-  filterAllRooms
+  filterAllRooms,
+ 
 };

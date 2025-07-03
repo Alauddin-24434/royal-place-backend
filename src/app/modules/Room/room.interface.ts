@@ -33,7 +33,8 @@ export interface IRoom {
   description?: string;
   type: RoomType;
   price?: number;
-  adults?: number;
+  adults: number;
+  maxOccupancy?: number;
   children: number;
   bedType: BedType;
   bedCount: number;

@@ -19,6 +19,7 @@ const RoomSchema = new Schema<IRoom>(
     // ✅ Newly added fields
     adults: { type: Number, default: 1 },
     children: { type: Number, default: 0 },
+    maxOccupancy: {type: Number,  }, 
 
     bedType: {
       type: String,

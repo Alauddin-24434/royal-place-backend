@@ -2,6 +2,7 @@ import RoomModel from "./room.schema";
 import { AppError } from "../../error/appError";
 import { IRoom } from "./room.interface";
 import sanitize from "mongo-sanitize";
+import BookingModel from "../Booking/booking.schema";
 
 //================================================Create new room=========================================
 const createRoom = async (roomData: IRoom) => {
@@ -21,6 +22,7 @@ const createRoom = async (roomData: IRoom) => {
     type: cleanData.type,
     bedType: cleanData.bedType,
     bedCount: cleanData?.bedCount,
+    maxOccupancy: cleanData?.adults + cleanData?.children, // calculate max occupancy
     price: cleanData.price,
     adults: cleanData.adults,
     children: cleanData.children,
@@ -40,21 +42,29 @@ const getAllRooms = async () => {
 
 // =================================================filter Room============================================================
 const filterRooms = async (queryParams: any) => {
-  const cleanQuery = sanitize(queryParams); // sanitize query params
-
-  const { searchTerm, type, currentPrice, page = 1, limit = 10 } = cleanQuery;
+  const cleanQuery = sanitize(queryParams);
+  const {
+    searchTerm,
+    type,
+    currentPrice,
+    checkInDate,
+    checkOutDate,
+    adults,
+    children,
+    page = 1,
+    limit = 10,
+  } = cleanQuery;
 
   const skip = (Number(page) - 1) * Number(limit);
-
   const filters: any = {};
 
-  // ✅ Type filter
+  // Type filter
   if (type) {
     const typeArr = type.split(",").map((s: string) => s.trim().toLowerCase());
     filters.type = { $in: typeArr };
   }
 
-  // ✅ Search filter
+  // Search term
   if (searchTerm) {
     filters.$or = [
       { title: { $regex: searchTerm, $options: "i" } },
@@ -62,31 +72,109 @@ const filterRooms = async (queryParams: any) => {
     ];
   }
 
-  // ✅ Current Price filter: expects format like "100-500"
+  // Price filter
   if (currentPrice) {
     const [min, max] = currentPrice.split("-").map(Number);
-    filters.price = {  // corrected from currentPrice to price
+    filters.price = {
       ...(min && { $gte: min }),
       ...(max && { $lte: max }),
     };
   }
 
-  const data = await RoomModel.find(filters)
-    .skip(skip)
-    .limit(Number(limit))
-    .sort({ createdAt: -1 });
+  // Guest count filter
+  const totalGuests = Number(adults || 0) + Number(children || 0);
+  if (totalGuests > 0) {
+    filters.maxOccupancy = { $gte: totalGuests };
+  }
 
-  const total = await RoomModel.countDocuments(filters);
+  // Base room query (only active rooms)
+  const baseRooms = await RoomModel.find({
+    ...filters,
+    roomStatus: "active",
+  });
+
+  // If no check-in/check-out dates, return base rooms with pagination
+  if (!checkInDate || !checkOutDate) {
+    const paginatedRooms = baseRooms.slice(skip, skip + Number(limit));
+    return {
+      meta: {
+        total: baseRooms.length,
+        page: Number(page),
+        limit: Number(limit),
+      },
+      data: paginatedRooms,
+    };
+  }
+
+  // Parse dates
+  const checkIn = new Date(checkInDate);
+  const checkOut = new Date(checkOutDate);
+
+  // Helper function: check room availability for a date range
+  const getAvailableRoomsByDate = async (rooms: typeof baseRooms, dateStart: Date, dateEnd: Date) => {
+    const available: typeof baseRooms = [];
+
+    for (const room of rooms) {
+      const conflict = await BookingModel.findOne({
+        "rooms.roomId": room._id,
+        $or: [
+          {
+            "rooms.checkInDate": { $lt: dateEnd, $gte: dateStart },
+          },
+          {
+            "rooms.checkOutDate": { $gt: dateStart, $lte: dateEnd },
+          },
+          {
+            "rooms.checkInDate": { $lte: dateStart },
+            "rooms.checkOutDate": { $gte: dateEnd },
+          },
+        ],
+      });
+
+      if (!conflict) {
+        available.push(room);
+      }
+    }
+
+    return available;
+  };
+
+  // Get rooms available for user's requested dates
+  const availableRooms = await getAvailableRoomsByDate(baseRooms, checkIn, checkOut);
+
+  // Define how many days before/after to suggest rooms
+  const SUGGESTION_DAYS_RANGE = 7;
+
+  // Calculate date ranges for suggestions
+
+  const afterStart = new Date(checkOut);
+  afterStart.setDate(afterStart.getDate() + 1);
+
+  const afterEnd = new Date(afterStart);
+  afterEnd.setDate(afterStart.getDate() + 7);  // 7 দিন পর
+
+  const availableAfterRooms = await getAvailableRoomsByDate(baseRooms, afterStart, afterEnd);
+
+  // Paginate availableRooms for user's requested dates
+  const paginatedAvailableRooms = availableRooms.slice(skip, skip + Number(limit));
 
   return {
     meta: {
-      total,
+      total: availableRooms.length,
       page: Number(page),
       limit: Number(limit),
     },
-    data,
+    data: paginatedAvailableRooms,
+    suggestions: {
+
+
+      dateRange: [afterStart.toISOString().split("T")[0], afterEnd.toISOString().split("T")[0]],
+      rooms: availableAfterRooms,
+
+    },
   };
 };
+
 
 // ===========================================Get a room by ID=========================================================
 const getRoomById = async (id: string) => {
@@ -117,6 +205,9 @@ const deleteRoom = async (id: string) => {
   return deleted;
 };
 
+
+
+
 export const roomService = {
   createRoom,
   getAllRooms,
@@ -124,4 +215,5 @@ export const roomService = {
   updateRoom,
   deleteRoom,
   filterRooms,
+
 };
