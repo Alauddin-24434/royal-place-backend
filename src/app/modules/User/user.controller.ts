@@ -10,6 +10,7 @@ import { createAccessToken, createRefreshToken } from "../../utils/generateToken
 import { envVariable } from "../../config";
 import { logger } from "../../utils/logger";
 import { AppError } from "../../error/appError";
+import { getIO } from "../../socket";
 
 // ================= Registration =====================
 const regestrationUser = catchAsyncHandeller(
@@ -29,6 +30,9 @@ const regestrationUser = catchAsyncHandeller(
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: "/",
     });
+
+    const io = getIO();
+    io.to("admin").emit("user-created", user)
 
     res.status(201).json({
       success: true,

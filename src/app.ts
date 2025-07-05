@@ -15,6 +15,7 @@ app.use(cors({
   credentials: true,
   origin: ["http://localhost:3000", "https://royal-place.vercel.app"],
 }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));

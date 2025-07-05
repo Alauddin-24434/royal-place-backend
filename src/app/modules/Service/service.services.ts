@@ -1,5 +1,5 @@
 import { AppError } from "../../error/appError";
-import { IService } from "./service.intercae";
+import { IService } from "./service.interfacae";
 import ServiceModel from "./service.schema";
 
 // =============================================Create Service=====================================================

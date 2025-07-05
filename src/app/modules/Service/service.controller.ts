@@ -1,12 +1,12 @@
 import { Request, Response } from "express";
 import { catchAsyncHandeller } from "../../utils/catchAsyncHandeller";
 import { serviceServices } from "./service.services";
-
+import { getIO } from "../../socket";
 
 // =============================================Create Service=====================================================
 const createService = catchAsyncHandeller(
   async (req: Request, res: Response) => {
- 
+
     const imageUrl = req.file?.path;
 
     const serviceData = {
@@ -16,11 +16,14 @@ const createService = catchAsyncHandeller(
     };
 
     const service = await serviceServices.crateService(serviceData);
+    // Socket event emit
+    const io = getIO();
+    io.to("guest").emit("service-added", service);
 
     res.status(201).json({
       success: true,
       message: "Service created successfully",
-      data:service,
+      data: service,
     });
   }
 );
@@ -30,11 +33,12 @@ const createService = catchAsyncHandeller(
 
 const getAllServices = catchAsyncHandeller(
   async (req: Request, res: Response) => {
+
     const services = await serviceServices.getAllServices();
     res.status(200).json({
       success: true,
       message: "All services fetched successfully",
-     data: services,
+      data: services,
     });
   }
 );
@@ -42,11 +46,13 @@ const getAllServices = catchAsyncHandeller(
 // ==================================================Delete service by Id=======================================================
 const deleteService = catchAsyncHandeller(
   async (req: Request, res: Response) => {
-   const service= serviceServices.deleteService(req.params.id)
+    const service = await serviceServices.deleteService(req.params.id)
+    console.log("delete", service)
+
     res.status(200).json({
       success: true,
       message: "Service delete successfully",
-     data: service,
+      data: service,
     });
   }
 );

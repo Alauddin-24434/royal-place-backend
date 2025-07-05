@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { catchAsyncHandeller } from "../../utils/catchAsyncHandeller";
 import { paymentServices } from "./payment.services";
 import sanitize from "mongo-sanitize";
+import { getIO } from "../../socket";
 
 
 
@@ -17,6 +18,14 @@ const paymentSuccess = catchAsyncHandeller(async (req: Request, res: Response) =
         const payment = await paymentServices.paymentVerify(
             cleanTransactionId as string
         );
+
+
+        // soket io
+        const io = getIO();
+
+        ["admin", "receptionist"].forEach(role => {
+            io.to(role).emit("payment-initiated", payment)
+        })
 
         const { payment_type, status_title, transactionId: tran_id, amount } = payment;
 
