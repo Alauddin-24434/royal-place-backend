@@ -153,7 +153,7 @@ const bookingInitialization = async (bookingData: IBooking) => {
 };
 
 // ======================================= Get Booked Dates For Room =================================
- const getBookedDatesForRoomByRoomId = async (roomId: string) => {
+const getBookedDatesForRoomByRoomId = async (roomId: string) => {
   if (!roomId || !mongoose.Types.ObjectId.isValid(roomId)) {
     throw new AppError("Invalid or missing Room ID", 400);
   }
@@ -197,7 +197,7 @@ const bookingInitialization = async (bookingData: IBooking) => {
 
 
 // ======================================= Get Booked rooms By User ID =================================
- const getBookedRoomsByUserId = async (userId: string) => {
+const getBookedRoomsByUserId = async (userId: string) => {
 
   if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
     throw new AppError("Invalid or missing User ID", 400);
@@ -323,12 +323,12 @@ const filterBookings = async (queryParams: any) => {
 
 
 // ========================================= Cancel Booking ============================================
- const cancelBookingService = async (transactionId: string) => {
+const cancelBookingService = async (bookingId: string) => {
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
-    const booking = await BookingModel.findOne({ transactionId }).session(session);
+    const booking = await BookingModel.findOne({ _id: bookingId }).session(session);
 
     if (!booking) {
       await session.abortTransaction();
@@ -356,8 +356,8 @@ const filterBookings = async (queryParams: any) => {
 
     // Update Payment status to "cancelled"
     const payment = await PaymentModel.findOneAndUpdate(
-      { transactionId },
-      { status: "cancelled" },
+      { transactionId: booking.transactionId },
+      { status: "claimRefund" },
       { new: true, session }
     );
 
@@ -382,5 +382,5 @@ export const bookingServices = {
   getBookedDatesForRoomByRoomId,
   cancelBookingService,
   filterBookings,
-  getBookedRoomsByUserId 
+  getBookedRoomsByUserId
 };

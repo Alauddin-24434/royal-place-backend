@@ -5,6 +5,8 @@ import PaymentModel from "./payment.schema";
 import { GetPaymentsOptions, PaymentStatus } from "./payment.interface";
 import { BookingStatus } from "../Booking/booking.interface";
 import sanitize from "mongo-sanitize";
+import UserModel from "../User/user.schema";
+import { AppError } from "../../error/appError";
 
 // ======================================================================Payment Verify with Success======================================================================
 const paymentVerify = async (transactionIdRaw: string) => {
@@ -209,9 +211,34 @@ const getPayments = async (options: GetPaymentsOptions) => {
   };
 };
 
+
+const paymentsGetByUserId = async (userId: string) => {
+  const bookings = await BookingModel.find({ userId }).select('transactionId');
+
+  if (!bookings.length) {
+    throw new AppError('No bookings found for this user.', 404);
+  }
+
+  const transactionIds = bookings.map((booking) => booking.transactionId).filter(Boolean);
+
+  if (!transactionIds.length) {
+    throw new AppError('No valid transaction IDs found from bookings.', 404);
+  }
+
+  const payments = await PaymentModel.find({
+    transactionId: { $in: transactionIds },
+  });
+
+  if (!payments.length) {
+    throw new AppError('No payments found for the given transactions.', 404);
+  }
+
+  return payments;
+};
 export const paymentServices = {
   paymentVerify,
   paymentFail,
   paymentCancel,
-  getPayments,
+  getPayments, 
+  paymentsGetByUserId
 };

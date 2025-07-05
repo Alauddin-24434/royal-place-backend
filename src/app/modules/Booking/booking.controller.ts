@@ -68,12 +68,19 @@ const getFilteredBookings = async (req: Request, res: Response) => {
 
 
 const cancelBooking = catchAsyncHandeller(async (req: Request, res: Response) => {
-  const { transactionId } = req.body;
 
-  const result = await bookingServices.cancelBookingService(transactionId);
+  const { id } = req.params;
+
+  const result = await bookingServices.cancelBookingService(id);
+
+  const io = getIO();
+
+  ["admin", "receptionist"].forEach(role => {
+    io.to(role).emit("booking-cancelled", result)
+  })
 
   res.status(200).json({
-    message: "Booking cancelled successfully",
+    message: "Booking has been successfully cancelled",
     success: true,
     booking: result.booking,
   });

@@ -58,19 +58,27 @@ const getReceptionistOverview = async () => {
 
 // ===== Guest Overview =====
 const getGuestOverview = async (userId: string) => {
+  const today = new Date();
+
+  // Get the upcoming booking (starting today or later)
   const upcomingBooking = await BookingModel.findOne({
     userId,
     bookingStatus: BookingStatus.Booked,
+    checkInDate: { $gte: today },
   })
     .sort({ createdAt: -1 })
-    .select("rooms bookingStatus totalAmount transactionId createdAt")
-    .populate("rooms.roomId", "title") // ✅ populate to get room title
+    .select("rooms bookingStatus totalAmount transactionId createdAt checkInDate")
+    .populate("rooms.roomId", "title")
     .lean();
 
-  // মোট বুকিং সংখ্যা
-  const totalBookings = await BookingModel.countDocuments({ userId });
+  
+  // Count only paid bookings (Booked or Completed)
+  const totalPaidBookings = await BookingModel.countDocuments({
+    userId,
+    bookingStatus: { $in: [BookingStatus.Booked, BookingStatus.Booked] },
+  });
 
-  // মোট পেমেন্ট পরিমাণ (booked বা completed স্টেটাস)
+  // Calculate the total amount paid (for Booked or Completed)
   const totalPaidAmountAgg = await BookingModel.aggregate([
     {
       $match: {
@@ -88,35 +96,42 @@ const getGuestOverview = async (userId: string) => {
 
   const totalPaidAmount = totalPaidAmountAgg[0]?.totalAmount || 0;
 
-  // সর্বশেষ ৫টি বুকিং
+  // Get the latest 5 bookings
   const recentBookings = await BookingModel.find({ userId })
     .sort({ createdAt: -1 })
     .limit(5)
-    .select("rooms totalAmount transactionId bookingStatus createdAt")
-    .populate("rooms.roomId", "title") // recent bookings room titles too
+    .select("rooms totalAmount transactionId bookingStatus createdAt checkOutDate")
+    .populate("rooms.roomId", "title")
     .lean();
 
+  // Get past bookings (check-out date before today)
+  const pastBookings = await BookingModel.find({
+    userId,
+    checkOutDate: { $lt: today },
+  })
+    .sort({ checkOutDate: -1 })
+    .limit(5)
+    .select("rooms totalAmount transactionId bookingStatus checkOutDate")
+    .populate("rooms.roomId", "title")
+    .lean();
+
+  // Prepare dashboard stats
   const stats = [
     {
       title: "Upcoming Booking Room",
       value:
-        typeof upcomingBooking?.rooms?.[0]?.roomId === "object" && "title" in (upcomingBooking?.rooms?.[0]?.roomId || {})
+        typeof upcomingBooking?.rooms?.[0]?.roomId === "object" &&
+        "title" in (upcomingBooking?.rooms?.[0]?.roomId || {})
           ? (upcomingBooking?.rooms?.[0]?.roomId as { title?: string }).title || "N/A"
           : "N/A",
-      icon: "Bed",
-      color: "text-emerald-400",
     },
     {
-      title: "Total Bookings",
-      value: totalBookings.toString(),
-      icon: "Calendar",
-      color: "text-sky-500",
+      title: "Total Paid Bookings",
+      value: totalPaidBookings.toString(),
     },
     {
       title: "Total Paid",
       value: `$${totalPaidAmount}`,
-      icon: "DollarSign",
-      color: "text-yellow-400",
     },
   ];
 
@@ -124,6 +139,7 @@ const getGuestOverview = async (userId: string) => {
     role: "guest",
     stats,
     recentBookings,
+    pastBookings,
   };
 };
 

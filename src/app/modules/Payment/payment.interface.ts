@@ -3,6 +3,7 @@ export enum PaymentStatus {
   Pending = "pending",
   Completed = "completed",
   Failed = "failed",
+  claimRefund = "claimRefund",
   Refunded = "refunded",
   Cancel="cancled"
 }
@@ -25,6 +26,6 @@ export interface IPayment  {
 export interface GetPaymentsOptions {
   page?: number;
   limit?: number;
-  status?: string;       // "pending", "completed", "failed", "refunded", "cancel"
-  searchTerm?: string;   // search by guest, transactionId or email
+  status?: string;       
+  searchTerm?: string;   
 }

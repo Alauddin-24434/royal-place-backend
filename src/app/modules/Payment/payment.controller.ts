@@ -1166,11 +1166,29 @@ const getPaymentsHandler = catchAsyncHandeller(async (req, res) => {
 });
 
 
+
+const getPaymentsByUserId = catchAsyncHandeller(async (req, res) => {
+    const { id } = req.params;
+
+    const result = await paymentServices.paymentsGetByUserId(id);
+    
+    res.status(200).json({
+        sucess: true,
+        data: result
+    })
+});
+
+
+
+
+
+
 // ======================Export controller=============================
 export const paymentController = {
     getPaymentsHandler,
     paymentSuccess,
     paymentFail,
-    paymentCancel
+    paymentCancel,
+    getPaymentsByUserId
 
 };

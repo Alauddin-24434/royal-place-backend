@@ -27,5 +27,9 @@ router.post(
 );
 router.get('/', paymentController.getPaymentsHandler
 );
+// get payments by User id
+router.get('/:id', paymentController.getPaymentsByUserId
+);
+
 
 export const paymentRoute = router;
