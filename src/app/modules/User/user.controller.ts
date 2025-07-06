@@ -1,5 +1,3 @@
-
-
 import { NextFunction, Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import sanitize from "mongo-sanitize";
@@ -23,6 +21,7 @@ const regestrationUser = catchAsyncHandeller(
     const accessToken = createAccessToken(payload);
     const refreshToken = createRefreshToken(payload);
 
+    // Set tokens as HttpOnly cookies
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: envVariable.ENV === "production",
@@ -30,15 +29,21 @@ const regestrationUser = catchAsyncHandeller(
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: "/",
     });
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: envVariable.ENV === "production",
+      sameSite: envVariable.ENV === "production" ? "none" : "lax",
+      maxAge: 15 * 60 * 1000, // 15 mins
+      path: "/",
+    });
 
     const io = getIO();
-    io.to("admin").emit("user-created", user)
+    io.to("admin").emit("user-created", user);
 
     res.status(201).json({
       success: true,
       message: "User registered successfully",
       data: {
-        accessToken,
         user,
       },
     });
@@ -53,13 +58,13 @@ const loginUser = catchAsyncHandeller(
 
     const user = await userServices.loginUserByEmail(email);
     if (!user) {
-      logger.warn("⚠️ Login failed: User not found");
+      logger.warn("Login failed: User not found");
       throw new AppError("Invalid email or password", 401);
     }
 
     const isPasswordMatched = await bcrypt.compare(password, user.password);
     if (!isPasswordMatched) {
-      logger.warn("⚠️ Login failed: Incorrect password");
+      logger.warn("Login failed: Incorrect password");
       throw new AppError("Invalid email or password", 401);
     }
 
@@ -74,28 +79,25 @@ const loginUser = catchAsyncHandeller(
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: "/",
     });
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: envVariable.ENV === "production",
+      sameSite: envVariable.ENV === "production" ? "none" : "lax",
+      maxAge: 15 * 60 * 1000,
+      path: "/",
+    });
 
     res.status(200).json({
       success: true,
       message: "Login successful",
       data: {
-        accessToken,
         user,
       },
     });
   }
 );
 
-
-
-
-
-
-
-
-
 //================================find single user=============================================
-
 const getSingleUser = catchAsyncHandeller(
   async (req: Request, res: Response, next: NextFunction) => {
     const id = sanitize(req.params.id);
@@ -110,13 +112,8 @@ const getSingleUser = catchAsyncHandeller(
 );
 
 // ===================================================== find all user==========================================
-
 const getAllUsers = catchAsyncHandeller(
   async (req: Request, res: Response, next: NextFunction) => {
-
-
-
-
     const users = await userServices.getAllUsers();
     logger.info("All users fetched successfully");
 
@@ -146,11 +143,9 @@ const deleteUser = catchAsyncHandeller(
 //=========================================== update user================================================================
 const updateUser = catchAsyncHandeller(
   async (req: Request, res: Response, next: NextFunction) => {
-
     const id = sanitize(req.params.id);
 
     let updatedData;
-
     const imageUrl = req.file?.path;
     if (imageUrl) {
       updatedData = sanitize({ ...req.body, image: imageUrl });
@@ -158,13 +153,11 @@ const updateUser = catchAsyncHandeller(
       updatedData = sanitize(req.body);
     }
 
-
     const user = await userServices.updateUserById(id, updatedData);
     const payload = { id: user._id, role: user.role };
     const refreshToken = createRefreshToken(payload);
     const accessToken = createAccessToken(payload);
 
-    // ⏬ Send refresh token via cookie or header
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: envVariable.ENV === "production",
@@ -172,47 +165,78 @@ const updateUser = catchAsyncHandeller(
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: "/",
     });
-    res.status(200)
-      .json({
-        success: true,
-        message: "User updated successfully",
-        data: {
-          accessToken,
-          user,
-        },
-      });
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: envVariable.ENV === "production",
+      sameSite: envVariable.ENV === "production" ? "none" : "lax",
+      maxAge: 15 * 60 * 1000,
+      path: "/",
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "User updated successfully",
+      data: {
+        user,
+      },
+    });
   }
 );
 
 // ======================================================refresh token ==============================================
-
-export const refreshAccessToken = catchAsyncHandeller(
+const refreshAccessToken = catchAsyncHandeller(
   async (req: Request, res: Response) => {
-
     const refreshTokenRaw = req.cookies?.refreshToken || req.headers["x-refresh-token"];
-
     const refreshToken = sanitize(refreshTokenRaw);
-    if (!refreshToken) {
 
+    if (!refreshToken) {
       throw new AppError("Refresh token missing", 401);
     }
 
     const user = await userServices.handleRefreshToken(refreshToken);
     const payload = { id: user._id, role: user.role };
 
-    // accessToken
     const accessToken = createAccessToken(payload);
 
-
+    // Set new access token cookie
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: envVariable.ENV === "production",
+      sameSite: envVariable.ENV === "production" ? "none" : "lax",
+      maxAge: 15 * 60 * 1000,
+      path: "/",
+    });
 
     res.status(200).json({
       success: true,
       message: "Access token refreshed successfully",
-      accessToken,
+      // no accessToken in response body for security
     });
   }
 );
 
+
+const logoutUser = catchAsyncHandeller(async (req: Request, res: Response, next: NextFunction) => {
+  // কুকি থেকে accessToken ও refreshToken দুইটাই মুছে ফেলো
+  res.clearCookie("accessToken", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    path: "/",
+  });
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    path: "/",
+  });
+
+  
+  res.status(200).json({
+    success: true,
+    message: "User logged out successfully",
+  });
+});
 
 // ======================export controller===============================================
 export const userController = {
@@ -222,5 +246,6 @@ export const userController = {
   getAllUsers,
   deleteUser,
   updateUser,
-  refreshAccessToken
+  refreshAccessToken,
+  logoutUser
 };

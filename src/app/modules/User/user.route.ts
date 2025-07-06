@@ -7,14 +7,28 @@ import { checkRole } from "../../utils/handeller/checkRole";
 
 const router = Router();
 
+// User registration with general rate limiter
 router.post("/signup", generalLimiter, userController.regestrationUser);
+
+// User login with strict rate limiter
 router.post("/login", strictLimiter, userController.loginUser);
+
+// Refresh access token with strict rate limiter
 router.post("/refresh-token", strictLimiter, userController.refreshAccessToken);
 
-// RESTful routes with generalLimiter (or no limiter if you want)
+// Get all users (admin only) with authentication and strict limiter
 router.get("/", authenticateUser, checkRole("admin"), strictLimiter, userController.getAllUsers);
+
+// Get single user by ID with general rate limiter
 router.get("/:id", generalLimiter, userController.getSingleUser);
-router.patch("/:id",  generalLimiter, upload.single("image"), userController.updateUser);
-router.delete("/:id",  generalLimiter, userController.deleteUser);
+
+// Update user by ID with optional image upload and general limiter
+router.patch("/:id", generalLimiter, upload.single("image"), userController.updateUser);
+
+// Delete user by ID with general limiter
+router.delete("/:id", generalLimiter, userController.deleteUser);
+
+// Logout route (clears tokens)
+router.post("/logout", userController.logoutUser);
 
 export const userRoute = router;
