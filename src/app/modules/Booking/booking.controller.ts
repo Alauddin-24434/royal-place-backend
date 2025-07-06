@@ -2,28 +2,41 @@ import { Request, Response } from "express";
 import { catchAsyncHandeller } from "../../utils/handeller/catchAsyncHandeller";
 import { bookingServices } from "./booking.services";
 import { getIO } from "../../socket";
+import { predictCancelProbability, prepareMLFeatures } from "./ml.service";
 
 // =====================================================Initiate Booking========================================
 
 const initiateBooking = catchAsyncHandeller(async (req: Request, res: Response) => {
   const bookingData = req.body;
 
+  // 1. ML feature prepare kora
+  const features = await prepareMLFeatures(bookingData.userId, bookingData);
 
+  // 2. ML model ke call kore cancel probability nite hobe
+  const cancelProbability = await predictCancelProbability(features);
+
+  // 3. Booking data te cancelProbability add kora (optional)
+  bookingData.cancelProbability = cancelProbability;
+
+  // 4. Booking creation call kora
   const result = await bookingServices.bookingInitialization(bookingData);
-  // soket io
+
+  // 5. Socket io event
   const io = getIO();
-  ["admin", "receptionist"].forEach(role => {
-    io.to(role).emit("booking-created", result);
+  ['admin', 'receptionist'].forEach(role => {
+    io.to(role).emit('booking-created', result);
   });
+
+  // 6. Response pathano
   res.status(200).json({
     success: true,
     payment_url: result.payment_url,
-    message: "Booking Initiate",
+    message: 'Booking Initiate',
     transactionId: result.transactionId,
+    cancelProbability,
     data: bookingData,
   });
-}
-);
+});
 
 // ========================================Avalabe rooms For Booking=================================================
 

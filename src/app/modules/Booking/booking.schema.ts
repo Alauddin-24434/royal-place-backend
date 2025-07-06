@@ -22,7 +22,7 @@ const bookingSchema = new Schema<IBooking>(
     city: { type: String, required: true },
 
     transactionId: { type: String, unique: true },
-
+    cancelProbability: { type: Number, default: 0 },
     bookingStatus: {
       type: String,
       enum: Object.values(BookingStatus),

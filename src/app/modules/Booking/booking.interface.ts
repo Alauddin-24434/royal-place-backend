@@ -32,4 +32,5 @@ export interface IBooking {
   city: string;
   bookingStatus: BookingStatus;
   transactionId?: string;
+  cancelProbability?: number;
 }
