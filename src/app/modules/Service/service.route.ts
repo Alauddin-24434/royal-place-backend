@@ -7,7 +7,7 @@ import { checkRole } from "../../utils/checkRole";
 const router = Router();
 
 // 🔓 Public Route — Anyone with authentication can access this
-router.get("/", authenticateUser, serviceController.getAllServices);
+router.get("/",  serviceController.getAllServices);
 
 
 // Create a new service (Only "receptionist" role is allowed)
