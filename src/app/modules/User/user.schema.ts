@@ -1,5 +1,5 @@
 import { Schema, model } from "mongoose";
-import { IUser } from "./user.interface";
+import { IUser, UserRole } from "./user.interface";
 import bcrypt from "bcryptjs";
 
 const saltRounds = 12;
@@ -24,7 +24,7 @@ const userSchema = new Schema<IUser>(
     role: {
       type: String,
       enum: ['guest', 'admin', 'receptionist'],
-      required: [true, "Role is required"],
+      default:UserRole.User,
     },
     isDeleted: {
       type: Boolean,
