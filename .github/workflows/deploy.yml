@@ -1,26 +1,25 @@
 name: Deploy to Railway
 
-
 on:
   push:
-      branches:
-        -main
+    branches:
+      - main
 
-  jobs:
-    build-and-deploy:
-      runs-on: ubuntu-latest
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
 
-      steps:
+    steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup Node.jobs
-        uses: actions/ssetup-node@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
           node-version: 18
-        
+
       - name: Install dependencies
-        run: pnpm Install
+        run: pnpm install
 
       - name: Build project
         run: pnpm run build
@@ -29,5 +28,5 @@ on:
         uses: railwayapp/cli-action@v1
         with:
           railwayToken: ${{ secrets.RAILWAY_TOKEN }}
-          projectId: 5872497e-c854-494b-8d2c-a485b102e5a9  
+          projectId: 5872497e-c854-494b-8d2c-a485b102e5a9
           environment: production
