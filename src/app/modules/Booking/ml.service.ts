@@ -1,3 +1,4 @@
+import { envVariable } from "../../config";
 import { calculateDaysBeforeCheckIn, calculateDuration } from "../../utils/dateUtils";
 import BookingModel from "./booking.schema";
 
@@ -34,7 +35,7 @@ interface MLFeatures {
 
 export async function predictCancelProbability(features: MLFeatures): Promise<number> {
   try {
-    const response = await axios.post("https://mlservice-production.up.railway.app/predict", features);
+    const response = await axios.post(`${envVariable.ML_CANCEL_PREDICT_API}/predict`, features);
     return response.data.cancel_probability;
   } catch (error) {
     console.error("ML prediction failed:", error);

@@ -1,9 +1,24 @@
 import { AppError } from "../../error/appError";
+import BookingModel from "../Booking/booking.schema";
 import { ITestimonial } from "./testimonial.interfce";
 import testimonialModel from "./testimonial.model";
 
 //============================================== Create a new testimonial==========================================
+
 const testimonialCreate = async (data: ITestimonial) => {
+  const { userId, roomId } = data;
+
+  // check if the user has booked the room
+  const hasBooked = await BookingModel.findOne({
+    userId,
+    roomId,
+    bookingStatus: { $in: ['booked'] }, 
+  });
+
+  if (!hasBooked) {
+    throw new AppError("You can only review rooms you have booked." , 403);
+  }
+
   const testimonial = await testimonialModel.create(data);
   return testimonial;
 };
