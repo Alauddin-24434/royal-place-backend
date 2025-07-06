@@ -6,18 +6,20 @@ import { checkRole } from "../../utils/checkRole";
 
 const router = Router();
 
-// Public route — সবাই দেখতে পারবে
-router.get("/",  authenticateUser, checkRole("receptionist"),  serviceController.getAllServices);
+// 🔓 Public Route — Anyone with authentication can access this
+router.get("/", authenticateUser, serviceController.getAllServices);
 
-// Protected routes — শুধু অথরাইজড ইউজার এবং নির্দিষ্ট রোলধারীরা এ্যাক্সেস পাবে
+
+// Create a new service (Only "receptionist" role is allowed)
 router.post(
   "/",
   authenticateUser,
-  checkRole("receptionist"),  // শুধু admin ইউজার allowed
+  checkRole("receptionist"),
   upload.single("image"),
   serviceController.createService
 );
 
+// Delete an existing service (Only "receptionist" role is allowed)
 router.delete(
   "/:id",
   authenticateUser,
@@ -25,6 +27,7 @@ router.delete(
   serviceController.deleteService
 );
 
+// Update an existing service (Only "admin" role is allowed)
 router.patch(
   "/:id",
   authenticateUser,
@@ -33,4 +36,5 @@ router.patch(
   serviceController.updateService
 );
 
+// Export the router to be used in the main app
 export const serviceRoute = router;

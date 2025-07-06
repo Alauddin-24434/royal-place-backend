@@ -8,7 +8,11 @@ export const initiateSocket = (server: HTTPServer) => {
   io = new Server(server, {
     cors: {
       credentials: true,
-      origin: ["http://localhost:3000", "https://royal-place.vercel.app"],
+      origin: [
+        "https://royal-place.vercel.app", // ✅ Production
+        "http://localhost:3000",          // ✅ Dev (Next.js default)
+      ],
+
       methods: ['GET', 'POST'],
     },
   });
