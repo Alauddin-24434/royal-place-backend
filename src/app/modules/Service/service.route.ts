@@ -14,7 +14,7 @@ router.get("/",  serviceController.getAllServices);
 router.post(
   "/",
   authenticateUser,
-  checkRole("receptionist"),
+  checkRole("admin"),
   upload.single("image"),
   serviceController.createService
 );
@@ -23,7 +23,7 @@ router.post(
 router.delete(
   "/:id",
   authenticateUser,
-  checkRole("receptionist"),
+  checkRole("admin"),
   serviceController.deleteService
 );
 
