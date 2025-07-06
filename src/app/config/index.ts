@@ -19,7 +19,5 @@ export const envVariable = {
   JWT_REFRESH_TOKEN_EXPIRES_IN:
     process.env.JWT_REFRESH_TOKEN_EXPIRES_IN || "7d",
 
-  COOKIE_SECURE: process.env.COOKIE_SECURE === "true",
-  COOKIE_HTTP_ONLY: process.env.COOKIE_HTTP_ONLY === "true",
-  COOKIE_SAME_SITE: process.env.COOKIE_SAME_SITE || "lax",
+
 };
