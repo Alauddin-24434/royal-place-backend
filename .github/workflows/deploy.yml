@@ -6,27 +6,31 @@ on:
       - main
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
 
-      - name: Install dependencies
-        run: pnpm install
+      - run: npm install
+      - run: npm run build
 
-      - name: Build project
-        run: pnpm run build
+      - name: Install Railway CLI
+        run: bash <(curl -fsSL cli.new)
+
+      - name: Login to Railway CLI
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: railway login --ci
 
       - name: Deploy to Railway
-        uses: railwayapp/cli-action@v1
-        with:
-          railwayToken: ${{ secrets.RAILWAY_TOKEN }}
-          projectId: 5872497e-c854-494b-8d2c-a485b102e5a9
-          environment: production
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: railway up --projectId 5872497e-c854-494b-8d2c-a485b102e5a9 --environment production
+
+       
