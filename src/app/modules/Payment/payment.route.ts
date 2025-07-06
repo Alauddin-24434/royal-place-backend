@@ -25,7 +25,7 @@ router.post(
     strictLimiter,
     paymentController.paymentCancel
 );
-router.get('/', paymentController.getPaymentsHandler
+router.get('/', paymentController.getPayments
 );
 // get payments by User id
 router.get('/:id', paymentController.getPaymentsByUserId

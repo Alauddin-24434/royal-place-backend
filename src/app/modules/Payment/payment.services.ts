@@ -47,15 +47,7 @@ const paymentVerify = async (transactionIdRaw: string) => {
     await session.commitTransaction();
     session.endSession();
 
-    return {
-      status: payment.status,
-      pay_status: verificationResponse.pay_status,
-      status_title: verificationResponse.status_title,
-      payment_type: verificationResponse.payment_type,
-      amount: verificationResponse.amount,
-
-      transactionId,
-    };
+    return payment;
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
@@ -100,14 +92,7 @@ const paymentFail = async (transactionIdRaw: string) => {
       await session.commitTransaction();
       session.endSession();
 
-      return {
-        status: payment.status,
-        pay_status: verificationResponse.pay_status,
-        status_title: verificationResponse.status_title,
-        payment_type: verificationResponse.payment_type,
-        amount: verificationResponse.amount,
-        transactionId,
-      };
+      return payment;
     } else {
       throw new Error("Payment is not marked as failed by AamarPay");
     }
@@ -155,14 +140,7 @@ const paymentCancel = async (transactionIdRaw: string) => {
       await session.commitTransaction();
       session.endSession();
 
-      return {
-        status: payment.status,
-        pay_status: verificationResponse.pay_status,
-        status_title: verificationResponse.status_title,
-        payment_type: verificationResponse.payment_type,
-        amount: verificationResponse.amount,
-        transactionId,
-      };
+      return payment;
     } else {
       throw new Error("Payment is not marked as cancelled by AamarPay");
     }

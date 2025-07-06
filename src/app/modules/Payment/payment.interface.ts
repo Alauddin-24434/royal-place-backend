@@ -5,7 +5,7 @@ export enum PaymentStatus {
   Failed = "failed",
   claimRefund = "claimRefund",
   Refunded = "refunded",
-  Cancel="cancled"
+  Cancel="cancelled"
 }
 
 
