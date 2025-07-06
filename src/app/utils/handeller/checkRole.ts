@@ -1,6 +1,6 @@
 // middlewares/checkRole.ts
 import { Request, Response, NextFunction } from "express";
-import { AppError } from "../error/appError";
+import { AppError } from "../../error/appError";
 
 // Extend Express Request interface to include 'user'
 declare global {

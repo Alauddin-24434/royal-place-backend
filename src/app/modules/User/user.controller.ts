@@ -4,9 +4,9 @@ import { NextFunction, Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import sanitize from "mongo-sanitize";
 
-import { catchAsyncHandeller } from "../../utils/catchAsyncHandeller";
+import { catchAsyncHandeller } from "../../utils/handeller/catchAsyncHandeller";
 import { userServices } from "./user.sevices";
-import { createAccessToken, createRefreshToken } from "../../utils/generateTokens";
+import { createAccessToken, createRefreshToken } from "../../utils/handeller/generateTokens";
 import { envVariable } from "../../config";
 import { logger } from "../../utils/logger";
 import { AppError } from "../../error/appError";

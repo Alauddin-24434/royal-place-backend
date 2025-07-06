@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { userController } from "./user.controller";
 import { generalLimiter, strictLimiter } from "../../middleware/rateLimiter";
-import upload from "../../middleware/multer/uploadMiddleware";
+import upload from "../../middleware/uploadMiddleware";
 import { authenticateUser } from "../../middleware/authenticateUser";
 
 const router = Router();

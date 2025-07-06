@@ -3,7 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 
 import globalErrorHandler from "./app/middleware/globalErrorHandeller";
-import { initialRoute } from "./app/api";
+import { initialRoute } from "./app/apiRoutes";
 
 // ==============================
 // App Configuration

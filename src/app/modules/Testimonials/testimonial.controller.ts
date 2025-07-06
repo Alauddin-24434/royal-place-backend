@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { catchAsyncHandeller } from "../../utils/catchAsyncHandeller";
+import { catchAsyncHandeller } from "../../utils/handeller/catchAsyncHandeller";
 import { testimonialServices } from "./testimonial.service";
 
 // ==============================================Create a new testimonial==========================================

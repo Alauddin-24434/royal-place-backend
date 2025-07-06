@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { roomController } from "./room.controller";
-import upload from "../../middleware/multer/uploadMiddleware";
+import upload from "../../middleware/uploadMiddleware";
 import { authenticateUser } from "../../middleware/authenticateUser";
-import { checkRole } from "../../utils/checkRole";
+import { checkRole } from "../../utils/handeller/checkRole";
 
 const router = Router();
 import { strictLimiter } from '../../middleware/rateLimiter';

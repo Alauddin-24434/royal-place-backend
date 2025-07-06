@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import sanitize from "mongo-sanitize";
 
 import { roomService } from "./room.services";
-import { catchAsyncHandeller } from "../../utils/catchAsyncHandeller";
+import { catchAsyncHandeller } from "../../utils/handeller/catchAsyncHandeller";
 import { getIO } from "../../socket";
 
 // ---------------------------Create Room-------------------------------

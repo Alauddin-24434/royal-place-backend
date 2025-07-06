@@ -1,5 +1,5 @@
 import axios from "axios";
-import { envVariable } from "../config";
+import { envVariable } from "../../config";
 
 // Define the input type for initiatePayment
 interface PaymentPayload {

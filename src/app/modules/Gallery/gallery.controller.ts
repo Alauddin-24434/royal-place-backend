@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { catchAsyncHandeller } from "../../utils/catchAsyncHandeller";
+import { catchAsyncHandeller } from "../../utils/handeller/catchAsyncHandeller";
 import { galleryService } from "./gallery.service";
 
 // ================================================Create gallery=============================================

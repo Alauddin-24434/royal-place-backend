@@ -5,7 +5,7 @@ import RoomModel from "../Room/room.schema";
 import { BookingStatus, IBooking } from "./booking.interface";
 import { differenceInDays } from "date-fns";
 import dayjs from "dayjs";
-import { initiatePayment } from "../../utils/payment.utills";
+import { initiatePayment } from "../../utils/handeller/payment.utills";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 

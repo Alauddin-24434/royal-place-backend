@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { catchAsyncHandeller } from "../../utils/catchAsyncHandeller";
+import { catchAsyncHandeller } from "../../utils/handeller/catchAsyncHandeller";
 import { bookingServices } from "./booking.services";
 import { getIO } from "../../socket";
 
@@ -72,7 +72,7 @@ const cancelBooking = catchAsyncHandeller(async (req: Request, res: Response) =>
   const { id } = req.params;
 
   const result = await bookingServices.cancelBookingService(id);
-
+// sokcket io
   const io = getIO();
 
   ["admin", "receptionist"].forEach(role => {
