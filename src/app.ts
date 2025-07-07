@@ -10,8 +10,9 @@ import { initialRoute } from "./app/apiRoutes";
 // ==============================
 const app: Application = express();
 app.use(cors({
-  credentials: true,
+
   origin: ["http://localhost:3000", "https://royal-place.vercel.app"],
+  credentials: true,
 }));
 
 app.use(cookieParser());
