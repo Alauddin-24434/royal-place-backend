@@ -24,16 +24,16 @@ const regestrationUser = catchAsyncHandeller(
     // Set tokens as HttpOnly cookies
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: envVariable.ENV === "production",
-      sameSite: envVariable.ENV === "production" ? "none" : "lax",
+      secure: true,
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: "/",
     });
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: envVariable.ENV === "production",
-      sameSite: envVariable.ENV === "production" ? "none" : "lax",
-      maxAge: 15 * 60 * 1000, // 15 mins
+      secure: true,
+      sameSite: "none",
+      maxAge: 15 * 60 * 1000,
       path: "/",
     });
 
@@ -74,15 +74,15 @@ const loginUser = catchAsyncHandeller(
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: envVariable.ENV === "production",
-      sameSite: envVariable.ENV === "production" ? "none" : "lax",
+      secure: true,
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: "/",
     });
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: envVariable.ENV === "production",
-      sameSite: envVariable.ENV === "production" ? "none" : "lax",
+      secure: true,
+      sameSite: "none",
       maxAge: 15 * 60 * 1000,
       path: "/",
     });
@@ -160,15 +160,15 @@ const updateUser = catchAsyncHandeller(
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: envVariable.ENV === "production",
-      sameSite: envVariable.ENV === "production" ? "none" : "lax",
+      secure: true,
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: "/",
     });
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: envVariable.ENV === "production",
-      sameSite: envVariable.ENV === "production" ? "none" : "lax",
+      secure: true,
+      sameSite: "none",
       maxAge: 15 * 60 * 1000,
       path: "/",
     });
@@ -201,8 +201,8 @@ const refreshAccessToken = catchAsyncHandeller(
     // Set new access token cookie
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: envVariable.ENV === "production",
-      sameSite: envVariable.ENV === "production" ? "none" : "lax",
+      secure: true,
+      sameSite: "none",
       maxAge: 15 * 60 * 1000,
       path: "/",
     });
@@ -210,7 +210,7 @@ const refreshAccessToken = catchAsyncHandeller(
     res.status(200).json({
       success: true,
       message: "Access token refreshed successfully",
-      // no accessToken in response body for security
+
     });
   }
 );
@@ -220,18 +220,18 @@ const logoutUser = catchAsyncHandeller(async (req: Request, res: Response, next:
   // কুকি থেকে accessToken ও refreshToken দুইটাই মুছে ফেলো
   res.clearCookie("accessToken", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    secure: true,
+    sameSite: "none",
     path: "/",
   });
   res.clearCookie("refreshToken", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    secure: true,
+    sameSite: "none",
     path: "/",
   });
 
-  
+
   res.status(200).json({
     success: true,
     message: "User logged out successfully",
