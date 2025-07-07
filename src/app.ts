@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 
 import globalErrorHandler from "./app/middleware/globalErrorHandeller";
 import { initialRoute } from "./app/apiRoutes";
+import { envVariable } from "./app/config";
 
 // ==============================
 // App Configuration
@@ -24,9 +25,10 @@ app.use(express.urlencoded({ extended: true }));
 //==================================== Root and Utility Routes========================================
 
 app.get("/", (req: Request, res: Response) => {
+  
   res.status(200).json({
     success: true,
-    message: "Database connected",
+    message: `Database connected ${envVariable.ENV}`,
   });
 });
 
