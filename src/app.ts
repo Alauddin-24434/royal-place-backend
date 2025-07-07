@@ -13,7 +13,11 @@ const app: Application = express();
 app.use(cors({
 
   origin: ["http://localhost:3000", "https://royal-place.vercel.app"],
+
   credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-vercel-protection-bypass'], // যদি প্রয়োজন হয়
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+
 }));
 
 app.use(cookieParser());
@@ -25,7 +29,9 @@ app.use(express.urlencoded({ extended: true }));
 //==================================== Root and Utility Routes========================================
 
 app.get("/", (req: Request, res: Response) => {
-  
+  console.log(typeof process.env.PORT); // "string"
+  console.log(typeof process.env.JWT_ACCESS_TOKEN_SECRET); // "string"
+  console.log(typeof process.env.SUCCESS_URL); // "string"
   res.status(200).json({
     success: true,
     message: `Database connected ${envVariable.ENV}`,

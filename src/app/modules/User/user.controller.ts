@@ -66,6 +66,13 @@ const loginUser = catchAsyncHandeller(
     const payload = { id: user._id, role: user.role };
     const accessToken = createAccessToken(payload);
     const refreshToken = createRefreshToken(payload);
+
+    console.log('Access Token:', accessToken);
+    console.log('Type of Access Token:', typeof accessToken);
+
+    console.log('Refresh Token:', refreshToken);
+    console.log('Type of Refresh Token:', typeof refreshToken);
+
     res.cookie("refreshToken", refreshToken, {
       ...cookieOptions,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
@@ -196,19 +203,9 @@ const refreshAccessToken = catchAsyncHandeller(
 
 
 const logoutUser = catchAsyncHandeller(async (req: Request, res: Response, next: NextFunction) => {
-  // কুকি থেকে accessToken ও refreshToken দুইটাই মুছে ফেলো
-  res.clearCookie("accessToken", {
-    httpOnly: true,
-    secure: true,
-    sameSite: "none",
-    path: "/",
-  });
-  res.clearCookie("refreshToken", {
-    httpOnly: true,
-    secure: true,
-    sameSite: "none",
-    path: "/",
-  });
+
+  res.clearCookie('accessToken', cookieOptions);
+  res.clearCookie('refreshToken', cookieOptions);
 
 
   res.status(200).json({

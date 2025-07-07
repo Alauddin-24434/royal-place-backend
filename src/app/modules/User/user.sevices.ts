@@ -103,7 +103,13 @@ console.log( cleanId, cleanUpdateData);
 export const handleRefreshToken = async (refreshToken: string) => {
   const cleanRefreshToken = sanitize(refreshToken);
 
-  const decoded = jwt.verify(cleanRefreshToken, envVariable.JWT_REFRESH_TOKEN_SECRET) as { id: string };
+  if (!envVariable.JWT_REFRESH_TOKEN_SECRET) {
+    throw new AppError("JWT refresh token secret is not defined", 500);
+  }
+  const decoded = jwt.verify(
+    cleanRefreshToken,
+    envVariable.JWT_REFRESH_TOKEN_SECRET as string
+  ) as unknown as { id: string };
 
   const user = await UserModel.findById(decoded.id);
   if (!user) {
