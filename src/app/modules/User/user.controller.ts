@@ -5,10 +5,10 @@ import sanitize from "mongo-sanitize";
 import { catchAsyncHandeller } from "../../utils/handeller/catchAsyncHandeller";
 import { userServices } from "./user.sevices";
 import { createAccessToken, createRefreshToken } from "../../utils/handeller/generateTokens";
-import { envVariable } from "../../config";
 import { logger } from "../../utils/logger";
 import { AppError } from "../../error/appError";
 import { getIO } from "../../socket";
+import { cookieOptions } from "../../config/cookie.config";
 
 // ================= Registration =====================
 const regestrationUser = catchAsyncHandeller(
@@ -23,18 +23,13 @@ const regestrationUser = catchAsyncHandeller(
 
     // Set tokens as HttpOnly cookies
     res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: "/",
+      ...cookieOptions,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
+
     res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      maxAge: 15 * 60 * 1000,
-      path: "/",
+      ...cookieOptions,
+      maxAge: 15 * 60 * 1000, // 15 minutes
     });
 
     const io = getIO();
@@ -71,22 +66,15 @@ const loginUser = catchAsyncHandeller(
     const payload = { id: user._id, role: user.role };
     const accessToken = createAccessToken(payload);
     const refreshToken = createRefreshToken(payload);
-
     res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: "/",
-    });
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      maxAge: 15 * 60 * 1000,
-      path: "/",
+      ...cookieOptions,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
+    res.cookie("accessToken", accessToken, {
+      ...cookieOptions,
+      maxAge: 15 * 60 * 1000, // 15 minutes
+    });
     res.status(200).json({
       success: true,
       message: "Login successful",
@@ -159,18 +147,13 @@ const updateUser = catchAsyncHandeller(
     const accessToken = createAccessToken(payload);
 
     res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: "/",
+      ...cookieOptions,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
+
     res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      maxAge: 15 * 60 * 1000,
-      path: "/",
+      ...cookieOptions,
+      maxAge: 15 * 60 * 1000, // 15 minutes
     });
 
     res.status(200).json({
@@ -198,15 +181,11 @@ const refreshAccessToken = catchAsyncHandeller(
 
     const accessToken = createAccessToken(payload);
 
-    // Set new access token cookie
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      maxAge: 15 * 60 * 1000,
-      path: "/",
-    });
 
+    res.cookie("accessToken", accessToken, {
+      ...cookieOptions,
+      maxAge: 15 * 60 * 1000, // 15 minutes
+    });
     res.status(200).json({
       success: true,
       message: "Access token refreshed successfully",
