@@ -9,6 +9,7 @@ import { logger } from "../../utils/logger";
 import { AppError } from "../../error/appError";
 import { getIO } from "../../socket";
 import { cookieOptions } from "../../config/cookie.config";
+import { IUserQueryparams } from "./user.interface";
 
 // ================= Registration =====================
 const regestrationUser = catchAsyncHandeller(
@@ -109,9 +110,15 @@ const getSingleUser = catchAsyncHandeller(
 // ===================================================== find all user==========================================
 const getAllUsers = catchAsyncHandeller(
   async (req: Request, res: Response, next: NextFunction) => {
-    const query= req.query;
-    const users = await userServices.getAllUsers(query);
-    logger.info("All users fetched successfully");
+    const { page = 1, limit = 10, searchTerm = "" } = req.query as Partial<IUserQueryparams>;
+
+    const queryParams: IUserQueryparams = {
+      page,
+      limit,
+      searchTerm,
+    };
+    const users = await userServices.getAllUsers(queryParams);
+    // logger.info("All users fetched successfully");
 
     res.status(200).json({
       success: true,

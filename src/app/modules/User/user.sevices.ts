@@ -1,7 +1,7 @@
 import { envVariable } from "../../config";
 import { AppError } from "../../error/appError";
 import { logger } from "../../utils/logger";
-import { IUpdateUserInput, IUser } from "./user.interface";
+import { IUpdateUserInput, IUser, IUserQueryparams } from "./user.interface";
 
 import jwt from "jsonwebtoken";
 import UserModel from "./user.schema";
@@ -52,12 +52,7 @@ const findUserById = async (id: string) => {
   return user;
 };
 
-export interface IUserQueryparams {
-  searchTerm: string;
-  limit: number;
-  page: number;
 
-}
 
 // ===================================================== Find all users ==========================================
 

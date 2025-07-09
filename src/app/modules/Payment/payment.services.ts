@@ -5,7 +5,6 @@ import PaymentModel from "./payment.schema";
 import { GetPaymentsOptions, PaymentStatus } from "./payment.interface";
 import { BookingStatus } from "../Booking/booking.interface";
 import sanitize from "mongo-sanitize";
-import UserModel from "../User/user.schema";
 import { AppError } from "../../error/appError";
 
 // ======================================================================Payment Verify with Success======================================================================
@@ -111,39 +110,23 @@ const paymentCancel = async (transactionIdRaw: string) => {
   session.startTransaction();
 
   try {
-    // ✅ Step 1: Verify with AamarPay
-    const verificationResponse = await verifyPayment(transactionId);
-    console.log('AamarPay verification response:', verificationResponse);
 
-    // ✅ Step 2: Get payment record
-    const payment = await PaymentModel.findOne({ transactionId }).session(session);
-    if (!payment) throw new Error('Payment not found');
-
-    // ✅ Step 3: Check if cancel is valid
-    if (
-      verificationResponse &&
-      verificationResponse.pay_status === "Cancelled"
-    ) {
-      // Update payment status
-      payment.status = PaymentStatus.Cancel;
-
+ 
       // Update booking status
       const booking = await BookingModel.findOne({ transactionId }).session(session);
       if (!booking) throw new Error('Booking not found');
 
-      booking.bookingStatus = BookingStatus.Cancelled;
+      const initiateCancel=booking.bookingStatus = BookingStatus.InitiateCancel;
 
       // Save both documents
-      await payment.save({ session });
+  
       await booking.save({ session });
 
       await session.commitTransaction();
       session.endSession();
 
-      return payment;
-    } else {
-      throw new Error("Payment is not marked as cancelled by AamarPay");
-    }
+      return initiateCancel;
+    
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
@@ -151,7 +134,7 @@ const paymentCancel = async (transactionIdRaw: string) => {
   }
 };
 
-
+//================================get payments data====================================
 const getPayments = async (options: GetPaymentsOptions) => {
   const page = options.page && options.page > 0 ? options.page : 1;
   const limit = options.limit && options.limit > 0 && options.limit <= 100 ? options.limit : 10;
@@ -189,7 +172,7 @@ const getPayments = async (options: GetPaymentsOptions) => {
   };
 };
 
-
+// ================get payments data getby userId================================= 
 const paymentsGetByUserId = async (userId: string) => {
   const bookings = await BookingModel.find({ userId }).select('transactionId');
 

@@ -4,6 +4,7 @@ export enum BookingStatus {
   Pending = "pending",
   Booked = "booked",
   Cancelled = "cancelled",
+  InitiateCancel="InitiateCancel",
   Failed = "failed",
 }
 

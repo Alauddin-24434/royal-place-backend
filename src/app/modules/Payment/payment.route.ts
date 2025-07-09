@@ -6,7 +6,7 @@ const router = express.Router();
 
 
 router.post(
-    "/verify-payment",
+    "/sucess",
 
     strictLimiter,
     paymentController.paymentSuccess
@@ -19,7 +19,7 @@ router.post(
     paymentController.paymentFail
 );
 
-router.post(
+router.get(
     "/cancel",
 
     strictLimiter,

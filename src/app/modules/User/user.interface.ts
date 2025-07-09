@@ -11,7 +11,7 @@ export interface IUser extends Document {
   name: string;
   image:string;
   email: string;
-  password: string; // hashed password
+  password: string; 
   role: UserRole;
   isDeleted:boolean;
   createdAt: Date;
@@ -20,7 +20,12 @@ export interface IUser extends Document {
   
 }
 
+export interface IUserQueryparams {
+  searchTerm: string;
+  limit: number;
+  page: number;
 
+}
 
 
 // update interfce 

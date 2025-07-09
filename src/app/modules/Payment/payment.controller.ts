@@ -53,13 +53,14 @@ const paymentFail = catchAsyncHandeller(async (req: Request, res: Response) => {
 });
 // ===============================================================Payment Cancel===================================================================
 const paymentCancel = catchAsyncHandeller(async (req: Request, res: Response) => {
+   
     const { transactionId } = req.query;
 
     const cleanTransactionId = sanitize(transactionId);
 
-    const payment = await paymentServices.paymentCancel(cleanTransactionId as string);
-
-    res.send(generatePaymentHtml("cancelled", payment?.transactionId as string));
+    await paymentServices.paymentCancel(cleanTransactionId as string);
+  
+    res.send(generatePaymentHtml("cancelled"));
 
 });
 
