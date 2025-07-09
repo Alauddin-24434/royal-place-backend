@@ -68,12 +68,7 @@ const loginUser = catchAsyncHandeller(
     const accessToken = createAccessToken(payload);
     const refreshToken = createRefreshToken(payload);
 
-    console.log('Access Token:', accessToken);
-    console.log('Type of Access Token:', typeof accessToken);
-
-    console.log('Refresh Token:', refreshToken);
-    console.log('Type of Refresh Token:', typeof refreshToken);
-
+ 
     res.cookie("refreshToken", refreshToken, {
       ...cookieOptions,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
