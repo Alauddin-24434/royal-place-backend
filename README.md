@@ -31,6 +31,8 @@ STRIPE_SECRET_KEY=
 SUCCESS_URL=http://localhost/api/verify-payment
 FAIL_URL=http://localhost/api/payment/fail
 CANCEL_URL=http://localhost/api/payment/cancel
+
+ML_CANCEL_PREDICT_API=
 ```
 
 > **Note:** Replace the values with your actual credentials before running the project.

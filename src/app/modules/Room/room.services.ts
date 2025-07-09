@@ -142,8 +142,6 @@ const filterRooms = async (queryParams: any) => {
   // Get rooms available for user's requested dates
   const availableRooms = await getAvailableRoomsByDate(baseRooms, checkIn, checkOut);
 
-  // Define how many days before/after to suggest rooms
-  const SUGGESTION_DAYS_RANGE = 7;
 
   // Calculate date ranges for suggestions
 

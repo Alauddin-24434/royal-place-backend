@@ -3,7 +3,7 @@ import { userController } from "./user.controller";
 import { generalLimiter, strictLimiter } from "../../middleware/rateLimiter";
 import upload from "../../middleware/uploadMiddleware";
 import { authenticateUser } from "../../middleware/authenticateUser";
-import { checkRole } from "../../utils/handeller/checkRole";
+import { authorizeRoles } from "../../utils/handeller/authorizeRoles";
 
 const router = Router();
 
@@ -17,7 +17,7 @@ router.post("/login", strictLimiter, userController.loginUser);
 router.post("/refresh-token", strictLimiter, userController.refreshAccessToken);
 
 // Get all users (admin only) with authentication and strict limiter
-router.get("/", authenticateUser, checkRole("admin"), strictLimiter, userController.getAllUsers);
+router.get("/",  authorizeRoles("admin"), strictLimiter, userController.getAllUsers);
 
 // Get single user by ID with general rate limiter
 router.get("/:id", generalLimiter, userController.getSingleUser);

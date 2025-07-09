@@ -2,7 +2,7 @@ import { Router } from "express";
 import { serviceController } from "./service.controller";
 import upload from "../../middleware/uploadMiddleware";
 import { authenticateUser } from "../../middleware/authenticateUser";
-import { checkRole } from "../../utils/handeller/checkRole";
+import { authorizeRoles } from "../../utils/handeller/authorizeRoles";
 
 const router = Router();
 
@@ -14,7 +14,7 @@ router.get("/",  serviceController.getAllServices);
 router.post(
   "/",
   authenticateUser,
-  checkRole("admin"),
+  authorizeRoles("admin"),
   upload.single("image"),
   serviceController.createService
 );
@@ -23,7 +23,7 @@ router.post(
 router.delete(
   "/:id",
   authenticateUser,
-  checkRole("admin"),
+  authorizeRoles("admin"),
   serviceController.deleteService
 );
 
@@ -31,7 +31,7 @@ router.delete(
 router.patch(
   "/:id",
   authenticateUser,
-  checkRole("admin"),
+  authorizeRoles("admin"),
   upload.single("image"),
   serviceController.updateService
 );

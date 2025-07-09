@@ -52,10 +52,44 @@ const findUserById = async (id: string) => {
   return user;
 };
 
+export interface IUserQueryparams {
+  searchTerm: string;
+  limit: number;
+  page: number;
+
+}
+
 // ===================================================== Find all users ==========================================
-const getAllUsers = async () => {
-  const users = await UserModel.find().sort({ createdAt: -1 }); // latest first
-  return users;
+
+const getAllUsers = async (queryParams: IUserQueryparams) => {
+
+  const { page, searchTerm, limit } = queryParams;
+
+  const skip = (Number(page) - 1) * Number(limit)
+  const filters: any = {};
+
+  if (searchTerm) {
+    filters.$or = [
+      { name: { $regex: searchTerm, $options: "i" } },
+      { email: { $regex: searchTerm, $options: "i" } },
+      { phone: { $regex: searchTerm, $options: "i" } }
+    ]
+  }
+
+
+
+  
+  const users = await UserModel.find(filters).sort({ createdAt: -1 }); // latest first
+
+  const  paginatedAvailableUsers=users.slice(skip,skip+Number(limit))
+  return {
+     meta: {
+      total: paginatedAvailableUsers.length,
+      page: Number(page),
+      limit: Number(limit),
+    },
+    data: paginatedAvailableUsers,
+  }
 };
 
 // ===================================================== Delete user ===============================================
@@ -81,7 +115,7 @@ const deleteUserById = async (id: string) => {
 const updateUserById = async (id: string, updateData: IUpdateUserInput) => {
   const cleanId = sanitize(id);
   const cleanUpdateData = sanitize(updateData);
-console.log( cleanId, cleanUpdateData);
+  console.log(cleanId, cleanUpdateData);
   // Only update if the user exists and is not soft deleted
   const updatedUser = await UserModel.findOneAndUpdate(
     { _id: cleanId, isDeleted: false },

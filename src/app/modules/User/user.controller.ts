@@ -109,7 +109,8 @@ const getSingleUser = catchAsyncHandeller(
 // ===================================================== find all user==========================================
 const getAllUsers = catchAsyncHandeller(
   async (req: Request, res: Response, next: NextFunction) => {
-    const users = await userServices.getAllUsers();
+    const query= req.query;
+    const users = await userServices.getAllUsers(query);
     logger.info("All users fetched successfully");
 
     res.status(200).json({
