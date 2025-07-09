@@ -17,7 +17,7 @@ router.post("/login", strictLimiter, userController.loginUser);
 router.post("/refresh-token", strictLimiter, userController.refreshAccessToken);
 
 // Get all users (admin only) with authentication and strict limiter
-router.get("/",  authorizeRoles("admin"), strictLimiter, userController.getAllUsers);
+router.get("/",   strictLimiter, userController.getAllUsers);
 
 // Get single user by ID with general rate limiter
 router.get("/:id", generalLimiter, userController.getSingleUser);

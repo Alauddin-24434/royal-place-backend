@@ -1,27 +1,34 @@
 import { AppError } from "../../error/appError";
+import { BookingStatus } from "../Booking/booking.interface";
 import BookingModel from "../Booking/booking.schema";
 import { ITestimonial } from "./testimonial.interfce";
 import testimonialModel from "./testimonial.model";
+import mongoose from 'mongoose';
 
 //============================================== Create a new testimonial==========================================
+
 
 const testimonialCreate = async (data: ITestimonial) => {
   const { userId, roomId } = data;
 
-  // check if the user has booked the room
-  const hasBooked = await BookingModel.findOne({
-    userId,
-    roomId,
-    bookingStatus: { $in: ['booked'] }, 
+  const bookings = await BookingModel.findOne({
+    userId: new mongoose.Types.ObjectId(userId),
+    bookingStatus: BookingStatus.Booked,
+    rooms: {
+      $elemMatch: {
+        roomId: new mongoose.Types.ObjectId(roomId),
+      },
+    },
   });
 
-  if (!hasBooked) {
-    throw new AppError("You can only review rooms you have booked." , 403);
+  if (!bookings) {
+    throw new AppError("You can only review rooms you have booked.", 403);
   }
 
   const testimonial = await testimonialModel.create(data);
   return testimonial;
 };
+
 
 //============================================== Get all testimonials sorted by newest==============================================
 
@@ -34,7 +41,7 @@ const findAllTestimonial = async ({ page = 1, limit = 10 }: { page?: number, lim
     .sort({ _id: -1 })
     .skip(skip)
     .limit(limit)
-    
+
 
   return testimonials;
 };
