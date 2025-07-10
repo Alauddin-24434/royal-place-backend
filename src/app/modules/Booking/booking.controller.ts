@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { catchAsyncHandeller } from "../../utils/handeller/catchAsyncHandeller";
 import { bookingServices } from "./booking.services";
 import { getIO } from "../../socket";
-import { predictCancelProbability, prepareMLFeatures } from "./ml.service";
+import { predictCancelProbability, prepareMLFeatures } from "../../mlModel/booking.prediction";
 
 // =====================================================Initiate Booking========================================
 

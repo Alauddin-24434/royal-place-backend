@@ -60,25 +60,24 @@ const getReceptionistOverview = async () => {
 const getGuestOverview = async (userId: string) => {
   const today = new Date();
 
-  // Get the upcoming booking (starting today or later)
+  // ✅ Get the upcoming booking (starting today or later)
   const upcomingBooking = await BookingModel.findOne({
     userId,
     bookingStatus: BookingStatus.Booked,
-    checkInDate: { $gte: today },
+    "rooms.checkOutDate": { $gte: today }, // ✅ fix here
   })
-    .sort({ createdAt: -1 })
-    .select("rooms bookingStatus totalAmount transactionId createdAt checkInDate")
+    .sort({ "rooms.checkInDate": 1 }) // optional: earliest check-in first
+    .select("rooms bookingStatus totalAmount transactionId createdAt")
     .populate("rooms.roomId", "title")
     .lean();
 
-  
-  // Count only paid bookings (Booked or Completed)
+  // ✅ Count only paid bookings
   const totalPaidBookings = await BookingModel.countDocuments({
     userId,
     bookingStatus: { $in: [BookingStatus.Booked, BookingStatus.Booked] },
   });
 
-  // Calculate the total amount paid (for Booked or Completed)
+  // ✅ Sum paid booking amounts
   const totalPaidAmountAgg = await BookingModel.aggregate([
     {
       $match: {
@@ -96,7 +95,7 @@ const getGuestOverview = async (userId: string) => {
 
   const totalPaidAmount = totalPaidAmountAgg[0]?.totalAmount || 0;
 
-  // Get the latest 5 bookings
+  // ✅ Get the latest 5 bookings
   const recentBookings = await BookingModel.find({ userId })
     .sort({ createdAt: -1 })
     .limit(5)
@@ -104,18 +103,18 @@ const getGuestOverview = async (userId: string) => {
     .populate("rooms.roomId", "title")
     .lean();
 
-  // Get past bookings (check-out date before today)
+  // ✅ Get past bookings
   const pastBookings = await BookingModel.find({
     userId,
-    checkOutDate: { $lt: today },
+    "rooms.checkOutDate": { $lt: today }, // same fix here (optional)
   })
-    .sort({ checkOutDate: -1 })
+    .sort({ "rooms.checkOutDate": -1 })
     .limit(5)
     .select("rooms totalAmount transactionId bookingStatus checkOutDate")
     .populate("rooms.roomId", "title")
     .lean();
 
-  // Prepare dashboard stats
+  // ✅ Prepare dashboard stats
   const stats = [
     {
       title: "Upcoming Booking Room",
@@ -142,6 +141,7 @@ const getGuestOverview = async (userId: string) => {
     pastBookings,
   };
 };
+
 
 
 

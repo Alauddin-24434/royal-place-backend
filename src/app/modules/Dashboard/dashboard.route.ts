@@ -5,6 +5,6 @@ import { authenticateUser } from "../../middleware/authenticateUser";
 const router = express.Router();
 
 // ✅ Only one dashboard route (role-based)
-router.get("/", authenticateUser, dashboardController.getDashboardData);
+router.get("/",  dashboardController.getDashboardData);
 
 export const dashboardRoute = router;

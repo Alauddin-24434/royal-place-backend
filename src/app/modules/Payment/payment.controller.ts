@@ -3,8 +3,7 @@ import { catchAsyncHandeller } from "../../utils/handeller/catchAsyncHandeller";
 import { paymentServices } from "./payment.services";
 import sanitize from "mongo-sanitize";
 import { getIO } from "../../socket";
-import { generatePaymentHtml } from "../../utils/handeller/paymentTemplate";
-
+import { generatePaymentHtml } from "../../views/payment.template";
 
 
 

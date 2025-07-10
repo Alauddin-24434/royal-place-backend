@@ -4,8 +4,10 @@ import { AppError } from "../../error/appError";
 import { dashboardService } from "./dashboard.service";
 
 const getDashboardData = catchAsyncHandeller(async (req: Request, res: Response) => {
-  const role = req.user?.role; // Role comes from authenticated user
-  const userId = req.user?._id; // Also from auth middleware
+  // const role = req.user?.role; // Role comes from authenticated user
+  const role = "guest"; // Role comes from authenticated user
+  // const userId = req.user?._id; // Also from auth middleware
+  const userId = "686a56b129a3cf86bd49b1e1"; // Also from auth middleware
 
   if (!role) {
     throw new AppError("User role is required", 400);

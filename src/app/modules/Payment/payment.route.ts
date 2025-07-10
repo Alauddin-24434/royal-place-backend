@@ -1,7 +1,7 @@
 import express from "express";
 import { paymentController } from "./payment.controller";
 import { strictLimiter } from "../../middleware/rateLimiter";
-import { authorizeRoles } from "../../utils/handeller/authorizeRoles";
+import { authorizeRoles } from "../../middleware/authorizeRoles";
 
 const router = express.Router();
 

@@ -2,7 +2,7 @@ import { Router } from "express";
 import { serviceController } from "./service.controller";
 import upload from "../../middleware/uploadMiddleware";
 import { authenticateUser } from "../../middleware/authenticateUser";
-import { authorizeRoles } from "../../utils/handeller/authorizeRoles";
+import { authorizeRoles } from "../../middleware/authorizeRoles";
 
 const router = Router();
 

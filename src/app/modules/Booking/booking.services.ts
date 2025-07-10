@@ -5,7 +5,6 @@ import RoomModel from "../Room/room.schema";
 import { BookingStatus, IBooking } from "./booking.interface";
 import { differenceInDays } from "date-fns";
 import dayjs from "dayjs";
-import { initiatePayment } from "../../utils/handeller/payment.utills";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 
@@ -14,6 +13,7 @@ dayjs.extend(isSameOrAfter);
 
 import PaymentModel from "../Payment/payment.schema";
 import { PaymentStatus } from "../Payment/payment.interface";
+import { initiatePayment } from "../../integrations/aamarpay";
 
 // ===================================== Generate TranId ==========================================
 function generateTransactionId() {

@@ -4,7 +4,7 @@ import sanitize from "mongo-sanitize";
 
 import { catchAsyncHandeller } from "../../utils/handeller/catchAsyncHandeller";
 import { userServices } from "./user.sevices";
-import { createAccessToken, createRefreshToken } from "../../utils/handeller/generateTokens";
+import { createAccessToken, createRefreshToken } from "../../utils/jwt/generateTokens";
 import { logger } from "../../utils/logger";
 import { AppError } from "../../error/appError";
 import { getIO } from "../../socket";
@@ -17,10 +17,10 @@ const regestrationUser = catchAsyncHandeller(
     const body = sanitize(req.body);
 
     const user = await userServices.registerUserIntoDb(body);
-    const payload = { id: user._id, role: user.role };
 
-    const accessToken = createAccessToken(payload);
-    const refreshToken = createRefreshToken(payload);
+
+    const accessToken = createAccessToken({ id: user._id, role: user.role });
+    const refreshToken = createRefreshToken({ id: user._id, role: user.role });
 
     // Set tokens as HttpOnly cookies
     res.cookie("refreshToken", refreshToken, {

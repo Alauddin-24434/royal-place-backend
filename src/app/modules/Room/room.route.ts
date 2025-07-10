@@ -5,7 +5,7 @@ import { authenticateUser } from "../../middleware/authenticateUser";
 
 const router = Router();
 import { strictLimiter } from '../../middleware/rateLimiter';
-import { authorizeRoles } from "../../utils/handeller/authorizeRoles";
+import { authorizeRoles } from "../../middleware/authorizeRoles";
 
 router.post("/", authenticateUser, authorizeRoles('admin', 'receptionist'), strictLimiter, upload.array("images", 5), roomController.createRoom);
 router.patch("/:id", authenticateUser, authorizeRoles('admin', 'receptionist'), strictLimiter, roomController.updateRoom);

@@ -5,6 +5,8 @@ import cookieParser from "cookie-parser";
 import globalErrorHandler from "./app/middleware/globalErrorHandeller";
 import { initialRoute } from "./app/apiRoutes";
 import { envVariable } from "./app/config";
+import { authenticateUser } from "./app/middleware/authenticateUser";
+import { authorizeRoles } from "./app/middleware/authorizeRoles";
 
 // ==============================
 // App Configuration
@@ -38,6 +40,20 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
+app.get("/test1", (req, res) => {
+  res.json({ message: "Hello world" });
+});
+
+app.get("/test2", authenticateUser, (req, res) => {
+  res.json({ message: "Authenticated!", user: req.user });
+});
+
+app.get("/test3", authenticateUser, authorizeRoles("admin"), (req, res) => {
+  res.json({ message: "Admin only" });
+});
+app.get("/test4",  authorizeRoles("admin"), (req, res) => {
+  res.json({ message: "Admin only" });
+});
 
 
 

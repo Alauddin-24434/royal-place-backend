@@ -1,4 +1,4 @@
-import { verifyPayment } from "../../utils/handeller/payment.utills";
+
 import BookingModel from "../Booking/booking.schema";
 import mongoose from "mongoose";
 import PaymentModel from "./payment.schema";
@@ -6,6 +6,7 @@ import { GetPaymentsOptions, PaymentStatus } from "./payment.interface";
 import { BookingStatus } from "../Booking/booking.interface";
 import sanitize from "mongo-sanitize";
 import { AppError } from "../../error/appError";
+import { verifyPayment } from "../../integrations/aamarpay";
 
 // ======================================================================Payment Verify with Success======================================================================
 const paymentVerify = async (transactionIdRaw: string) => {

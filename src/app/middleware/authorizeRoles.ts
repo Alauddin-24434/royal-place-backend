@@ -1,6 +1,6 @@
 // middlewares/authorizeRoles.ts
 import { Request, Response, NextFunction } from "express";
-import { AppError } from "../../error/appError";
+import { AppError } from "../error/appError";
 
 // Extend Express Request interface to include 'user'
 declare global {
@@ -14,19 +14,17 @@ declare global {
     }
   }
 }
-/**
- * Middleware to check if the authenticated user has an allowed role.
- * Throws 403 Forbidden if user's role is not permitted.
- */
 export const authorizeRoles = (...allowedRoles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
     const userRole = req.user?.role;
+    console.log("User role in authorizeRoles:", userRole);
 
-    // Role missing or not authorized
     if (!userRole || !allowedRoles.includes(userRole)) {
+      console.log("Unauthorized role, throwing error");
       return next(new AppError("You do not have permission to access this resource", 403));
     }
 
+    console.log("User authorized");
     next();
   };
 };
