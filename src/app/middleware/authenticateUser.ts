@@ -1,5 +1,4 @@
 import jwt from "jsonwebtoken";
-import { Request, Response, NextFunction } from "express";
 import { AppError } from "../error/appError";
 import { envVariable } from "../config";
 import UserModel from "../modules/User/user.schema";
@@ -12,32 +11,41 @@ interface JwtDecodedPayload {
   exp?: number;
 }
 
-/**
- * ===== 🔐 User Authentication Middleware =====
- * 
- * 🚀 Purpose:
- *   Verify JWT token from cookies and attach user info to the request.
- * 
- * 🛠️ Steps:
- *   1️⃣ Extract token from 'accessToken' cookie.
- *   2️⃣ Verify token validity using secret key.
- *   3️⃣ Fetch user data (role, _id) from database.
- *   4️⃣ Attach user to req.user for downstream use.
- *   5️⃣ Call next() to continue request processing.
- * 
- * ⚠️ Throws Errors:
- *   ❌ 401 Unauthorized — if token missing or invalid.
- *   ❌ 404 Not Found — if user does not exist.
- * 
- * 🔄 Wrapped in catchAsyncHandeller to catch async errors.
- */
 export const authenticateUser = catchAsyncHandeller(async (req, res, next) => {
-  const token = req.cookies?.accessToken;
+  let token: string | undefined;
+
+  // 1️⃣ Try getting token from Authorization header
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    token = authHeader.split(" ")[1];
+  }
+
+  // 2️⃣ Fallback: get token from cookie
+  if (!token) {
+    token = req.cookies?.accessToken;
+  }
+
+  // 3️⃣ No token at all
   if (!token) throw new AppError("Unauthorized: Token missing", 401);
 
+  let decoded: JwtDecodedPayload;
+  try {
+    decoded = jwt.verify(
+      token,
+      envVariable.JWT_ACCESS_TOKEN_SECRET as string,
+      { clockTolerance: 5 } // Optional buffer
+    ) as JwtDecodedPayload;
+  } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      throw new AppError("Unauthorized: Token expired", 401);
+    } else if (error instanceof jwt.JsonWebTokenError) {
+      throw new AppError("Unauthorized: Invalid token", 401);
+    } else {
+      throw error;
+    }
+  }
 
-  const decoded = jwt.verify(token, envVariable.JWT_ACCESS_TOKEN_SECRET as string) as JwtDecodedPayload;
-
+  // ✅ Verify user
   const user = await UserModel.findById(decoded.id).select("role _id");
   if (!user) throw new AppError("User not found", 404);
 

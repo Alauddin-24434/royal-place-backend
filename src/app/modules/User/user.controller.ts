@@ -28,10 +28,6 @@ const regestrationUser = catchAsyncHandeller(
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
-    res.cookie("accessToken", accessToken, {
-      ...cookieOptions,
-      maxAge: 15 * 60 * 1000, // 15 minutes
-    });
 
     const io = getIO();
     io.to("admin").emit("user-created", user);
@@ -41,6 +37,7 @@ const regestrationUser = catchAsyncHandeller(
       message: "User registered successfully",
       data: {
         user,
+        accessToken
       },
     });
   }
@@ -68,21 +65,19 @@ const loginUser = catchAsyncHandeller(
     const accessToken = createAccessToken(payload);
     const refreshToken = createRefreshToken(payload);
 
- 
+
     res.cookie("refreshToken", refreshToken, {
       ...cookieOptions,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
-    res.cookie("accessToken", accessToken, {
-      ...cookieOptions,
-      maxAge: 15 * 60 * 1000, // 15 minutes
-    });
+
     res.status(200).json({
       success: true,
       message: "Login successful",
       data: {
         user,
+        accessToken
       },
     });
   }
@@ -177,39 +172,35 @@ const updateUser = catchAsyncHandeller(
 );
 
 // ======================================================refresh token ==============================================
-const refreshAccessToken = catchAsyncHandeller(
+export const refreshAccessToken = catchAsyncHandeller(
   async (req: Request, res: Response) => {
     const refreshTokenRaw = req.cookies?.refreshToken || req.headers["x-refresh-token"];
     const refreshToken = sanitize(refreshTokenRaw);
 
-    console.log("ref")
     if (!refreshToken) {
       throw new AppError("Refresh token missing", 401);
     }
 
-    const user = await userServices.handleRefreshToken(refreshToken);
-    const payload = { id: user._id, role: user.role };
+    const user = await userServices.requestRefreshToken(refreshToken);
 
+    const payload = { id: user._id, role: user.role };
     const accessToken = createAccessToken(payload);
 
-
-    res.cookie("accessToken", accessToken, {
-      ...cookieOptions,
-      maxAge: 15 * 60 * 1000, // 15 minutes
-    });
     res.status(200).json({
       success: true,
       message: "Access token refreshed successfully",
-
+      data: {
+        user,
+        accessToken,
+      },
     });
   }
 );
 
 
-
 const logoutUser = catchAsyncHandeller(async (req: Request, res: Response, next: NextFunction) => {
 
-  res.clearCookie('accessToken', cookieOptions);
+
   res.clearCookie('refreshToken', cookieOptions);
 
 

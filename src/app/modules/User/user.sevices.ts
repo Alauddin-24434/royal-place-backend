@@ -129,25 +129,34 @@ const updateUserById = async (id: string, updateData: IUpdateUserInput) => {
 };
 
 // ====================================================== Refresh token ==============================================
-export const handleRefreshToken = async (refreshToken: string) => {
-  const cleanRefreshToken = sanitize(refreshToken);
 
-  if (!envVariable.JWT_REFRESH_TOKEN_SECRET) {
-    throw new AppError("JWT refresh token secret is not defined", 500);
+interface JwtDecodedPayload {
+  id: string;
+  role?: string;
+  iat?: number;
+  exp?: number;
+}
+
+export const requestRefreshToken = async (refreshToken: string) => {
+  try {
+    const decoded = jwt.verify(
+      refreshToken,
+      envVariable.JWT_REFRESH_TOKEN_SECRET as string
+    ) as JwtDecodedPayload;
+
+    const user = await UserModel.findById(decoded.id).select("role _id");
+    if (!user) throw new AppError("User not found", 404);
+
+    return user;
+  } catch (err) {
+    if (err instanceof jwt.TokenExpiredError) {
+      throw new AppError("Refresh token expired", 401);
+    } else if (err instanceof jwt.JsonWebTokenError) {
+      throw new AppError("Invalid refresh token", 401);
+    }
+    throw err; // fallback for unexpected errors
   }
-  const decoded = jwt.verify(
-    cleanRefreshToken,
-    envVariable.JWT_REFRESH_TOKEN_SECRET as string
-  ) as unknown as { id: string };
-
-  const user = await UserModel.findById(decoded.id);
-  if (!user) {
-    throw new AppError("User not found", 404);
-  }
-
-  return user;
 };
-
 // ============================== Export Services ==========================================================
 export const userServices = {
   registerUserIntoDb,
@@ -156,5 +165,5 @@ export const userServices = {
   getAllUsers,
   deleteUserById,
   updateUserById,
-  handleRefreshToken,
+ requestRefreshToken ,
 };
