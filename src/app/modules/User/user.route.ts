@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { userController } from "./user.controller";
-import { generalLimiter, strictLimiter } from "../../middleware/rateLimiter";
+import { generalLimiter} from "../../middleware/rateLimiter";
 import upload from "../../middleware/uploadMiddleware";
 import { authorizeRoles } from "../../middleware/authorizeRoles";
 import { authenticateUser } from "../../middleware/authenticateUser";
@@ -8,24 +8,16 @@ import { authenticateUser } from "../../middleware/authenticateUser";
 const router = Router();
 
 // User registration with general rate limiter
-router.post("/signup", generalLimiter, userController.regestrationUser);
+router.post("/signup",  userController.regestrationUser);
 
 // User login with strict rate limiter
-router.post("/login", strictLimiter, userController.loginUser);
+router.post("/login", userController.loginUser);
 
 // Refresh access token with strict rate limiter
-router.post("/refresh-token", strictLimiter, userController.refreshAccessToken);
+router.post("/refresh-token",  userController.refreshAccessToken);
 
 // Get all users (admin only) with authentication and strict limiter
-// router.get("/",authenticateUser, authorizeRoles("admin"),  strictLimiter, userController.getAllUsers);
-router.get("/", authenticateUser, authorizeRoles("admin"), async (req, res, next) => {
-  try {
-    // your logic here
-    res.json({ success: true, message: "Admin access granted" });
-  } catch (err) {
-    next(err);
-  }
-});
+router.get("/",authenticateUser, authorizeRoles("admin"), userController.getAllUsers);
 
 
 // Get single user by ID with general rate limiter

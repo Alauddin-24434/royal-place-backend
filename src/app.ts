@@ -5,8 +5,6 @@ import cookieParser from "cookie-parser";
 import globalErrorHandler from "./app/middleware/globalErrorHandeller";
 import { initialRoute } from "./app/apiRoutes";
 import { envVariable } from "./app/config";
-import { authenticateUser } from "./app/middleware/authenticateUser";
-import { authorizeRoles } from "./app/middleware/authorizeRoles";
 
 // ==============================
 // App Configuration
@@ -31,29 +29,13 @@ app.use(express.urlencoded({ extended: true }));
 //==================================== Root and Utility Routes========================================
 
 app.get("/", (req: Request, res: Response) => {
-  console.log(typeof process.env.PORT); // "string"
-  console.log(typeof process.env.JWT_ACCESS_TOKEN_SECRET); // "string"
-  console.log(typeof process.env.SUCCESS_URL); // "string"
   res.status(200).json({
     success: true,
-    message: `Database connected ${envVariable.ENV}`,
+    message: `Database connected ${envVariable.NODE_ENV}`,
   });
 });
 
-app.get("/test1", (req, res) => {
-  res.json({ message: "Hello world" });
-});
 
-app.get("/test2", authenticateUser, (req, res) => {
-  res.json({ message: "Authenticated!", user: req.user });
-});
-
-app.get("/test3", authenticateUser, authorizeRoles("admin"), (req, res) => {
-  res.json({ message: "Admin only" });
-});
-app.get("/test4",  authorizeRoles("admin"), (req, res) => {
-  res.json({ message: "Admin only" });
-});
 
 
 

@@ -33,7 +33,8 @@ interface JwtDecodedPayload {
  */
 export const authenticateUser = catchAsyncHandeller(async (req, res, next) => {
   const token = req.cookies?.accessToken;
-  if (!token) throw new AppError("Unauthorized: No token provided", 401);
+  if (!token) throw new AppError("Unauthorized: Token missing", 401);
+
 
   const decoded = jwt.verify(token, envVariable.JWT_ACCESS_TOKEN_SECRET as string) as JwtDecodedPayload;
 

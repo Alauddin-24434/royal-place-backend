@@ -182,6 +182,7 @@ const refreshAccessToken = catchAsyncHandeller(
     const refreshTokenRaw = req.cookies?.refreshToken || req.headers["x-refresh-token"];
     const refreshToken = sanitize(refreshTokenRaw);
 
+    console.log("ref")
     if (!refreshToken) {
       throw new AppError("Refresh token missing", 401);
     }
@@ -203,6 +204,7 @@ const refreshAccessToken = catchAsyncHandeller(
     });
   }
 );
+
 
 
 const logoutUser = catchAsyncHandeller(async (req: Request, res: Response, next: NextFunction) => {

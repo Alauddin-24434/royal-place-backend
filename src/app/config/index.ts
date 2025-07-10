@@ -7,7 +7,7 @@ dotenv.config();
 export const envVariable = {
   PORT: process.env.PORT,
   DB_URL: process.env.DB_URL,
-  ENV: process.env.ENV,
+  NODE_ENV: process.env.ENV,
 
   // AamarPay Payment Config
   AAMARPAY_STORE_ID: process.env.AAMARPAY_STORE_ID || "",
