@@ -5,4 +5,4 @@ import { productionLogger } from "./productionLogger";
 
 
 
-export const logger= envVariable.ENV === "production" ?  productionLogger : developmentLogger;
+export const logger= envVariable.NODE_ENV === "production" ?  productionLogger : developmentLogger;

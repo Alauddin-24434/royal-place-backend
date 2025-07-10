@@ -63,7 +63,7 @@ const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
   } else {
     // 💥 Unexpected error
     logger.error("🔥 Unexpected Error:", err);
-    if (envVariable.ENV === "production") {
+    if (envVariable.NODE_ENV === "production") {
       message = "Internal Server Error";
     }
   }
@@ -74,7 +74,7 @@ const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
     statusCode,
     error: errorName,
     message,
-    stack: envVariable.ENV === "development" ? err.stack : undefined,
+    stack: envVariable.NODE_ENV === "development" ? err.stack : undefined,
   });
 };
 
