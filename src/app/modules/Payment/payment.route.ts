@@ -28,7 +28,7 @@ router.get(
     paymentController.paymentCancel
 );
 // get all paymnets 
-router.get('/', authorizeRoles("admin","receptionist"), paymentController.getPayments
+router.get('/', paymentController.getPayments
 );
 // get payments by User id
 router.get('/:id', paymentController.getPaymentsByUserId

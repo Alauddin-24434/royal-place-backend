@@ -2,7 +2,8 @@ import BookingModel from "../Booking/booking.schema";
 import RoomModel from "../Room/room.schema";
 import { BookingStatus } from "../Booking/booking.interface";
 import dayjs from "dayjs";
-import moment from 'moment'; 
+import moment from 'moment';
+import { Types } from "mongoose";
 
 // ===== Admin Overview =====
 const getAdminOverview = async () => {
@@ -30,7 +31,7 @@ const getAdminOverview = async () => {
     .lean();
 
   return { role: "admin", stats, recentBookings };
-};  
+};
 
 // ===== Receptionist Overview =====
 const getReceptionistOverview = async () => {
@@ -58,40 +59,33 @@ const getReceptionistOverview = async () => {
 };
 
 
-const getGuestOverview = async (userId: string) => {
+
+export const getGuestOverview = async (userId: string) => {
   const today = new Date();
+  const objectId = new Types.ObjectId(userId);
 
-  // Get the upcoming booking (starting today or later)
-  const upcomingBooking = await BookingModel.findOne({
-    userId,
-    bookingStatus: BookingStatus.Booked,
-    "rooms.checkOutDate": { $gte: today },
-  })
-    .sort({ "rooms.checkInDate": 1 })
-    .select("rooms bookingStatus totalAmount transactionId createdAt")
-    .populate("rooms.roomId", "title")
-    .lean();
-
-  // Safe extraction of upcoming room title
-  const upcomingRoomTitle =
-    upcomingBooking?.rooms?.[0]?.roomId &&
-    typeof upcomingBooking.rooms[0].roomId === 'object' &&
-    'title' in upcomingBooking.rooms[0].roomId
-      ? (upcomingBooking.rooms[0].roomId as { title: string }).title
-      : 'No upcoming booking';
-
-  // Count total paid bookings (only Booked status)
+  // ✅ Count bookings by status
   const totalPaidBookings = await BookingModel.countDocuments({
-    userId,
+    userId: objectId,
     bookingStatus: BookingStatus.Booked,
   });
 
-  // Sum total paid amounts (only Booked status)
+  const totalCancelBookings = await BookingModel.countDocuments({
+    userId: objectId,
+    bookingStatus: BookingStatus.Cancelled,
+  });
+
+  const totalPendingBookings = await BookingModel.countDocuments({
+    userId: objectId,
+    bookingStatus: BookingStatus.Pending,
+  });
+
+  // ✅ 3. Sum total paid amounts using aggregation
   const totalPaidAmountAgg = await BookingModel.aggregate([
     {
       $match: {
-        userId,
-        bookingStatus: BookingStatus.Booked,
+        userId: new Types.ObjectId(userId),
+        bookingStatus: BookingStatus.Booked || "Booked",
       },
     },
     {
@@ -101,19 +95,23 @@ const getGuestOverview = async (userId: string) => {
       },
     },
   ]);
-  const totalPaidAmount = totalPaidAmountAgg[0]?.totalAmount || 0;
+  const totalPaidAmount = totalPaidAmountAgg?.[0]?.totalAmount || 0;
 
-  // Get latest 5 bookings
-  const recentBookings = await BookingModel.find({ userId })
+  // ✅ 4. Get latest 5 recent bookings excluding "InitiateCancel"
+  const recentBookings = await BookingModel.find({
+    userId: new Types.ObjectId(userId),
+    bookingStatus: { $ne: "InitiateCancel" },
+  })
     .sort({ createdAt: -1 })
     .limit(5)
     .select("rooms totalAmount transactionId bookingStatus createdAt checkOutDate")
     .populate("rooms.roomId", "title")
     .lean();
 
-  // Get past bookings (checkout date before today)
+  // ✅ 5. Get past bookings (checkout before today), excluding "InitiateCancel"
   const pastBookings = await BookingModel.find({
-    userId,
+    userId: new Types.ObjectId(userId),
+    bookingStatus: { $ne: "InitiateCancel" },
     "rooms.checkOutDate": { $lt: today },
   })
     .sort({ "rooms.checkOutDate": -1 })
@@ -122,64 +120,38 @@ const getGuestOverview = async (userId: string) => {
     .populate("rooms.roomId", "title")
     .lean();
 
-  // Monthly stats for last 6 months (count bookings by createdAt month)
-  const sixMonthsAgo = moment(today).subtract(5, 'months').startOf('month').toDate();
 
-  const monthlyRaw = await BookingModel.aggregate([
-    {
-      $match: {
-        userId,
-        createdAt: { $gte: sixMonthsAgo },
-      },
-    },
-    {
-      $group: {
-        _id: { $month: '$createdAt' },
-        count: { $sum: 1 },
-      },
-    },
-    {
-      $project: {
-        month: '$_id',
-        count: 1,
-        _id: 0,
-      },
-    },
-  ]);
-
-  // Prepare array of last 6 months with counts
-  const monthlyStats = Array.from({ length: 6 }).map((_, i) => {
-    const date = moment().subtract(5 - i, 'months');
-    const monthNum = date.month() + 1;
-    const monthShort = date.format('MMM');
-    const match = monthlyRaw.find((m) => m.month === monthNum);
-    return { month: monthShort, count: match?.count || 0 };
-  });
-
-  // Prepare dashboard stats
+  // ✅ 6. Prepare dashboard stats
   const stats = [
     {
-      title: "Upcoming Booking Room",
-      value: upcomingRoomTitle,
+      title: "Total Paid Amount",
+      value: `$${totalPaidAmount}`,
     },
     {
       title: "Total Paid Bookings",
       value: totalPaidBookings.toString(),
     },
+
     {
-      title: "Total Paid",
-      value: `$${totalPaidAmount}`,
+      title: "Total Pending Bookings",
+      value: totalPendingBookings.toString(),
     },
+    {
+      title: "Total Cancel Bookings",
+      value: totalCancelBookings.toString(),
+    },
+
   ];
 
+  // ✅ 7. Return overview object
   return {
     role: "guest",
     stats,
     recentBookings,
     pastBookings,
-    monthlyStats, // Add this to show charts like booking trends
   };
 };
+
 
 export default getGuestOverview;
 
@@ -207,6 +179,6 @@ export const dashboardOverviewByRole = async (role: string, userId?: string) => 
 
 // ===== Export final dashboard service =====
 export const dashboardService = {
- 
+
   dashboardOverviewByRole,
 };

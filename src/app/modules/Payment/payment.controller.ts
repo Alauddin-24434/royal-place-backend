@@ -44,7 +44,7 @@ const paymentFail = catchAsyncHandeller(async (req: Request, res: Response) => {
         cleanTransactionId as string
     );
 
-    
+
     // Compact Royal Place payment success page
     res.send(generatePaymentHtml("failed", payment?.transactionId as string));
 
@@ -52,13 +52,13 @@ const paymentFail = catchAsyncHandeller(async (req: Request, res: Response) => {
 });
 // ===============================================================Payment Cancel===================================================================
 const paymentCancel = catchAsyncHandeller(async (req: Request, res: Response) => {
-   
+
     const { transactionId } = req.query;
 
     const cleanTransactionId = sanitize(transactionId);
 
     await paymentServices.paymentCancel(cleanTransactionId as string);
-  
+
     res.send(generatePaymentHtml("cancelled"));
 
 });
@@ -81,7 +81,7 @@ const getPayments = catchAsyncHandeller(async (req, res) => {
 
 const getPaymentsByUserId = catchAsyncHandeller(async (req, res) => {
     const { id } = req.params;
-
+    console.log("userId",id)
     const result = await paymentServices.paymentsGetByUserId(id);
 
     res.status(200).json({
