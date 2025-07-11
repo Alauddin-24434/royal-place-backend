@@ -110,7 +110,7 @@ const deleteUserById = async (id: string) => {
 const updateUserById = async (id: string, updateData: IUpdateUserInput) => {
   const cleanId = sanitize(id);
   const cleanUpdateData = sanitize(updateData);
-  console.log(cleanId, cleanUpdateData);
+  
   // Only update if the user exists and is not soft deleted
   const updatedUser = await UserModel.findOneAndUpdate(
     { _id: cleanId, isDeleted: false },

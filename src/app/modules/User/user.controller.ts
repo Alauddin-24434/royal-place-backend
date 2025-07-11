@@ -166,6 +166,7 @@ const updateUser = catchAsyncHandeller(
       message: "User updated successfully",
       data: {
         user,
+        accessToken
       },
     });
   }
