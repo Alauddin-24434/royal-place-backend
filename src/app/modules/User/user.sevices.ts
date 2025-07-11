@@ -144,7 +144,7 @@ export const requestRefreshToken = async (refreshToken: string) => {
       envVariable.JWT_REFRESH_TOKEN_SECRET as string
     ) as JwtDecodedPayload;
 
-    const user = await UserModel.findById(decoded.id).select("role _id");
+    const user = await UserModel.findById(decoded.id);
     if (!user) throw new AppError("User not found", 404);
 
     return user;
