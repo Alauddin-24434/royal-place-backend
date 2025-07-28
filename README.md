@@ -91,6 +91,26 @@ pnpm run build && pnpm start
 npm run build && npm start
 ```
 
+## 🐳 Dockerization
+
+This project includes a `Dockerfile` for easy containerization, making deployment more consistent and portable.
+
+### Build the Docker Image
+
+```bash
+docker build -t royal-place-backend .
+```
+
+### Run the Docker Container
+
+```bash
+docker run -p 5000:5000 --env-file .env royal-place-backend
+```
+
+**Note:** Ensure your `.env` file is correctly configured for the container environment, especially the `DATABASE_URL` and other service URLs.
+
+
+-----
 
 ---
 
