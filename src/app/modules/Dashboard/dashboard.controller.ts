@@ -5,7 +5,7 @@ import { dashboardService } from "./dashboard.service";
 
 const getDashboardData = catchAsyncHandeller(async (req: Request, res: Response) => {
   // const role = req.user?.role; // Role comes from authenticated user
-  const role = "guest"; // Role comes from authenticated user
+  const role = req.user?.role;
   const userId = req.user?._id; // Also from auth middleware
 
   if (!role) {
