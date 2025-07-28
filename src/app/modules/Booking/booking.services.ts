@@ -271,10 +271,9 @@ const getBookedRoomsByUserId = async (userId: string) => {
 // ======================================= Filter Bookings ============================================
 const filterBookings = async (queryParams: any) => {
   const {
-    search,
-    startDate,
-    endDate,
-    bookingStatus,
+    searchTerm,
+ 
+    status,
     page = 1,
     limit = 10,
   } = queryParams;
@@ -283,8 +282,8 @@ const filterBookings = async (queryParams: any) => {
 
   const filters: any = {};
 
-  if (bookingStatus) {
-    const statusArr = bookingStatus.split(",").map((s: string) => s.trim());
+  if (status) {
+    const statusArr = status.split(",").map((s: string) => s.trim());
     filters.bookingStatus = { $in: statusArr };
   }
 
@@ -292,11 +291,11 @@ const filterBookings = async (queryParams: any) => {
   // You may want to filter bookings by date range inside rooms — that requires more complex aggregation.
   // Here just a basic filter on bookingStatus and skip/limit.
 
-  if (search) {
+  if (searchTerm) {
     filters.$or = [
-      { name: { $regex: search, $options: "i" } },
-      { email: { $regex: search, $options: "i" } },
-      { phone: { $regex: search, $options: "i" } },
+      { name: { $regex: searchTerm, $options: "i" } },
+      { email: { $regex: searchTerm, $options: "i" } },
+      { phone: { $regex: searchTerm, $options: "i" } },
     ];
   }
 
