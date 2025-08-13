@@ -3,7 +3,7 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - main  
+      - main
 
 jobs:
   build-and-deploy:
@@ -27,13 +27,17 @@ jobs:
       - name: Build project
         run: pnpm run build
 
-      - name: Build Docker image
-        run: docker build -t elearning-backend .
+      # Install Railway CLI
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
 
-      - name: Push to Railway
-        uses: railwayapp/railway-action@v2
-        with:
-          railwayToken: ${{ secrets.RAILWAY_TOKEN }}
-          projectId: ${{ secrets.RAILWAY_PROJECT_ID }}
-          serviceId: ${{ secrets.RAILWAY_SERVICE_ID }}
-          branch: main
+      # Deploy to Railway (Service ID optional)
+      - name: Deploy to Railway
+        run: |
+          if [ -n "${{ secrets.RAILWAY_SERVICE_ID }}" ]; then
+            railway up --service ${{ secrets.RAILWAY_SERVICE_ID }}
+          else
+            railway up
+          fi
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
