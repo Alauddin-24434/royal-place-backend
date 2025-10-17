@@ -37,7 +37,7 @@ connectRD().catch(err => console.error("Redis connection failed", err));
 // ==============================
 const redisStore = new RedisStore({
   client: redisClient,
-  prefix: "sess:",  // optional
+ 
 });
 
 // use in session

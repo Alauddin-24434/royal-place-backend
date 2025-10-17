@@ -1,44 +1,37 @@
-import mongoose, { Schema } from "mongoose";
-import { IRoom, RoomStatus, RoomType } from "./room.interface";
+import mongoose, { Schema, Document, InferSchemaType } from "mongoose";
+import { RoomType, RoomStatus, BedType } from "./room.interface";
 
-const RoomSchema = new Schema<IRoom>(
+const RoomSchema = new Schema(
   {
     roomNumber: { type: String, required: true, unique: true },
     floor: { type: Number, required: true },
-    title: { type: String, default: "" },
+    title: { type: String, required: true },
     images: { type: [String], default: [] },
     features: { type: [String], default: [] },
     description: { type: String, default: "" },
-    type: {
-      type: String,
-      enum: Object.values(RoomType),
-      required: true,
-    },
+    type: { type: String, enum: Object.values(RoomType), required: true, index: true },
     price: { type: Number },
-
-    // ✅ Newly added fields
     adults: { type: Number, default: 1 },
     children: { type: Number, default: 0 },
-    maxOccupancy: {type: Number,  }, 
-
-    bedType: {
-      type: String,
-      enum: ["king", "queen", "twin", "double", "single"], // from BedType enum
-      required: true,
-    },
+    maxOccupancy: { type: Number },
+    bedType: { type: String, enum: Object.values(BedType), required: true },
     bedCount: { type: Number, required: true },
-
-
-    roomStatus: {
-      type: String,
-      enum: Object.values(RoomStatus),
-      default: RoomStatus.Active,
-    },
+    roomStatus: { type: String, enum: Object.values(RoomStatus), default: RoomStatus.Active },
   },
   {
     timestamps: true,
   }
 );
 
-const RoomModel = mongoose.model<IRoom>("Room", RoomSchema);
+// Auto calculate maxOccupancy
+RoomSchema.pre("save", function (next) {
+  this.maxOccupancy = this.adults + this.children;
+  next();
+});
+
+// Inferred Document Type
+export type RoomDocument = InferSchemaType<typeof RoomSchema> & Document;
+
+const RoomModel = mongoose.model<RoomDocument>("Room", RoomSchema);
 export default RoomModel;
+

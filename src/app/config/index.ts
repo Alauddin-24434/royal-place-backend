@@ -2,12 +2,12 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-
-
 export const envVariable = {
   PORT: process.env.PORT,
   MONGO_URI: process.env.MONGO_URI,
   NODE_ENV: process.env.ENV,
+
+ DOCKER_CONTAINER: process.env.DOCKER_CONTAINER,
 
   // AamarPay Payment Config
   AAMARPAY_STORE_ID: process.env.AAMARPAY_STORE_ID || "",
@@ -24,6 +24,8 @@ export const envVariable = {
   JWT_REFRESH_TOKEN_SECRET: process.env.JWT_REFRESH_TOKEN_SECRET!,
 
   // ✅ These should be explicitly typed to satisfy `jsonwebtoken`
-  JWT_ACCESS_TOKEN_EXPIRES_IN: (process.env.JWT_ACCESS_TOKEN_EXPIRES_IN || "15m") as `${number}${'s' | 'm' | 'h' | 'd'}`,
-  JWT_REFRESH_TOKEN_EXPIRES_IN: (process.env.JWT_REFRESH_TOKEN_EXPIRES_IN || "7d") as `${number}${'s' | 'm' | 'h' | 'd'}`,
+  JWT_ACCESS_TOKEN_EXPIRES_IN: (process.env.JWT_ACCESS_TOKEN_EXPIRES_IN ||
+    "15m") as `${number}${"s" | "m" | "h" | "d"}`,
+  JWT_REFRESH_TOKEN_EXPIRES_IN: (process.env.JWT_REFRESH_TOKEN_EXPIRES_IN ||
+    "7d") as `${number}${"s" | "m" | "h" | "d"}`,
 };

@@ -7,13 +7,12 @@ import { getIO } from "../../socket";
 
 // ---------------------------Create Room-------------------------------
 const createRoom = catchAsyncHandeller(async (req: Request, res: Response) => {
-
   // sanitize req.body
   const cleanBody = sanitize(req.body);
 
-  // Handle file uploads if 
+  // Handle file uploads if
   const files = req.files as Express.Multer.File[];
-  const images = files ? files.map(file => file.path) : [];
+  const images = files ? files.map((file) => file.path) : [];
 
   // Prepare room data
   const roomData = {
@@ -24,7 +23,7 @@ const createRoom = catchAsyncHandeller(async (req: Request, res: Response) => {
   const newRoom = await roomService.createRoom(roomData);
   // soket io
   const io = getIO();
-  io.to("guest").emit("room-created", newRoom)
+  io.to("guest").emit("room-created", newRoom);
   res.status(201).json({
     success: true,
     message: "Room created successfully",
@@ -34,7 +33,8 @@ const createRoom = catchAsyncHandeller(async (req: Request, res: Response) => {
 
 // -------------------------------Get All Rooms-----------------
 const getAllRooms = catchAsyncHandeller(async (req: Request, res: Response) => {
-  const rooms = await roomService.getAllRooms();
+  const query = req.query;
+  const rooms = await roomService.getAllRooms(query);
   res.status(200).json({
     success: true,
     message: "Rooms retrieved successfully",
@@ -42,18 +42,18 @@ const getAllRooms = catchAsyncHandeller(async (req: Request, res: Response) => {
   });
 });
 
-// -------------------------------Filter All Rooms-----------------
-const filterAllRooms = catchAsyncHandeller(async (req: Request, res: Response) => {
-  // sanitize req.query
-  const cleanQuery = sanitize(req.query);
+// // -------------------------------Filter All Rooms-----------------
+// const filterAllRooms = catchAsyncHandeller(async (req: Request, res: Response) => {
+//   // sanitize req.query
+//   const cleanQuery = sanitize(req.query);
 
-  const rooms = await roomService.filterRooms(cleanQuery);
-  res.status(200).json({
-    success: true,
-    message: "Rooms filtered successfully",
-    data: rooms,
-  });
-});
+//   const rooms = await roomService.filterRooms(cleanQuery);
+//   res.status(200).json({
+//     success: true,
+//     message: "Rooms filtered successfully",
+//     data: rooms,
+//   });
+// });
 
 //------------------------------- Get Single Room---------------------
 const getRoomById = catchAsyncHandeller(async (req: Request, res: Response) => {
@@ -95,14 +95,11 @@ const deleteRoom = catchAsyncHandeller(async (req: Request, res: Response) => {
   });
 });
 
-
-
 export const roomController = {
   createRoom,
   getAllRooms,
   getRoomById,
   updateRoom,
   deleteRoom,
-  filterAllRooms,
-
+  // filterAllRooms,
 };

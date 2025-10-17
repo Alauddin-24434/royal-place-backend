@@ -13,7 +13,7 @@ export enum RoomStatus {
 
 }
 
-enum BedType {
+export enum BedType {
   King = "king",
   Queen = "queen",
   Twin = "twin",
@@ -27,7 +27,7 @@ export interface IRoom {
 
   roomNumber: string;
   floor: number;
-  title?: string;
+  title: string;
   images?: string[];
   features: string[];
   description?: string;
@@ -39,4 +39,16 @@ export interface IRoom {
   bedType: BedType;
   bedCount: number;
   roomStatus: RoomStatus;
+}
+
+
+// ================= Query Type =================
+export interface RoomQuery {
+  page?: number;
+  limit?: number;
+  searchTerm?: string;
+  type?: string; // "luxury,suite" এর মতো comma separated
+  adults?: number;
+  children?: number;
+  select?: string | Record<string, 1 | 0>;
 }
