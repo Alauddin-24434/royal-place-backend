@@ -6,6 +6,7 @@ import { IUpdateUserInput, IUser, IUserQueryparams } from "./user.interface";
 import jwt from "jsonwebtoken";
 import UserModel from "./user.schema";
 import sanitize from "mongo-sanitize";
+import { redisClient } from "../../config/redis";
 
 //======================================================== Registration ===================================================================
 const registerUserIntoDb = async (body: IUser) => {
@@ -40,14 +41,29 @@ const loginUserByEmail = async (email: string) => {
 };
 
 //================================ Find single user =============================================
+
 const findUserById = async (id: string) => {
   const cleanId = sanitize(id);
+  const cacheKey = `user:${cleanId}`;
 
+  // 1️⃣ Check Redis cache first
+  const cachedUser = await redisClient.get(cacheKey);
+  if (cachedUser) {
+    console.log("✅ Data from Redis Cache is");
+    return JSON.parse(cachedUser);
+  }
+
+  // 2️⃣ If not cached, query MongoDB
+  console.log("🟡 Data from MongoDB (Cache miss)");
   const user = await UserModel.findById(cleanId);
 
   if (!user) {
     throw new AppError("User not found!", 404);
   }
+
+  // 3️⃣ Save to Redis for next time
+  await redisClient.set(cacheKey, JSON.stringify(user), { EX: 3600 });
+  console.log("💾 Cached user data in Redis");
 
   return user;
 };

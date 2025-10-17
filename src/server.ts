@@ -9,7 +9,7 @@ import { initiateSocket } from "./app/socket";
 async function server() {
   try {
     // Connect to MongoDB
-    await mongoose.connect(envVariable.DB_URL as string);
+    await mongoose.connect(envVariable.MONGO_URI as string);
     logger.info("🛢 Database connected");
 
     // Create HTTP server with Express app
