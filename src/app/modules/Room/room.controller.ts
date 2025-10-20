@@ -3,7 +3,6 @@ import sanitize from "mongo-sanitize";
 
 import { roomService } from "./room.services";
 import { catchAsyncHandeller } from "../../utils/handeller/catchAsyncHandeller";
-import { getIO } from "../../socket";
 
 // ---------------------------Create Room-------------------------------
 const createRoom = catchAsyncHandeller(async (req: Request, res: Response) => {
@@ -21,9 +20,9 @@ const createRoom = catchAsyncHandeller(async (req: Request, res: Response) => {
   };
 
   const newRoom = await roomService.createRoom(roomData);
-  // soket io
-  const io = getIO();
-  io.to("guest").emit("room-created", newRoom);
+  
+  
+ 
   res.status(201).json({
     success: true,
     message: "Room created successfully",

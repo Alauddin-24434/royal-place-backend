@@ -2,11 +2,12 @@ import { createClient } from "redis";
 import dotenv from "dotenv";
 dotenv.config();
 
-const isDocker = process.env.DOCKER_CONTAINER === "true";
+// Convert env variable to boolean
+const isDocker: boolean = true;
 
 const url = isDocker
-  ? "redis://royalplace_redis:6379" //use docker
-  : "redis://localhost:6379"; // Local Redis instance
+  ? "redis://royalplace_redis:6379" // Docker
+  : "redis://localhost:6379"; // Local Redis
 
 export const redisClient = createClient({ url });
 
