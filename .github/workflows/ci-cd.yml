@@ -37,16 +37,22 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # 6. Build project
+      # 6. TypeScript check (will print full tsc errors to the Actions log)
+      - name: TypeScript check
+        run: pnpm exec tsc --noEmit
+        # If this step fails it will stop the job and show the tsc error output in the workflow logs,
+        # making it easy to see and fix the TypeScript compilation errors.
+
+      # 7. Build project
       - name: Build project
         run: pnpm run build
         timeout-minutes: 10
 
-      # 7. Install Railway CLI globally (npm)
+      # 8. Install Railway CLI
       - name: Install Railway CLI
         run: npm install -g @railway/cli
 
-      # 8. Deploy to Railway
+      # 9. Deploy to Railway
       - name: Deploy to Railway
         run: railway up --service ${{ secrets.RAILWAY_SERVICE_ID }}
         timeout-minutes: 15
