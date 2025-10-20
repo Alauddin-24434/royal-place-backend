@@ -33,21 +33,22 @@ jobs:
       - name: Install pnpm
         run: npm install -g pnpm
 
-      # 5. Install dependencies
+      # 5. Install project dependencies
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       # 6. Build project
       - name: Build project
         run: pnpm run build
+        timeout-minutes: 10
 
-      # 7. Install Railway CLI
+      # 7. Install Railway CLI globally (npm)
       - name: Install Railway CLI
-        run: pnpm add -g @railway/cli
+        run: npm install -g @railway/cli
 
       # 8. Deploy to Railway
       - name: Deploy to Railway
-        run: pnpm exec railway up --service ${{ secrets.RAILWAY_SERVICE_ID }}
+        run: railway up --service ${{ secrets.RAILWAY_SERVICE_ID }}
         timeout-minutes: 15
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
