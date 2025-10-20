@@ -1,13 +1,22 @@
 import { createClient } from "redis";
-// import { envVariable } from ".";
+import dotenv from "dotenv";
+dotenv.config();
 
-// const redisUrl = envVariable.REDIS_URL_DOCKER;
-// console.log(redisUrl)
-// console.log(envVariable.DOCKER_CONTAINER);
-export const redisClient = createClient({ url: "redis://royalplace_redis:6379" });
-redisClient.on("error", (err) => console.log("Redis Client Error", err));
+const isDocker = process.env.DOCKER_CONTAINER === "true";
+
+const url = isDocker
+  ? "redis://royalplace_redis:6379" //use docker
+  : "redis://localhost:6379"; // Local Redis instance
+
+export const redisClient = createClient({ url });
+
+redisClient.on("error", (err) => console.error("Redis Client Error:", err));
 
 export const connectRD = async () => {
-  await redisClient.connect();
-  console.log("Connected to Redis");
+  try {
+    await redisClient.connect();
+    console.log(`✅ Connected to Redis (${isDocker ? "Docker" : "Local"})`);
+  } catch (err) {
+    console.error("❌ Redis connection failed:", err);
+  }
 };
