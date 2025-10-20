@@ -10,28 +10,45 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Checkout repo
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # 2. Cache pnpm dependencies
+      - name: Cache pnpm
+        uses: actions/cache@v3
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
+      # 3. Setup Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
 
+      # 4. Install pnpm globally
       - name: Install pnpm
         run: npm install -g pnpm
 
+      # 5. Install dependencies
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # 6. Build project
       - name: Build project
         run: pnpm run build
 
+      # 7. Install Railway CLI
       - name: Install Railway CLI
-        run: npm install -g @railway/cli
+        run: pnpm add -g @railway/cli
 
+      # 8. Deploy to Railway
       - name: Deploy to Railway
-        run: railway up --service ${{ secrets.RAILWAY_SERVICE_ID }}
+        run: pnpm exec railway up --service ${{ secrets.RAILWAY_SERVICE_ID }}
+        timeout-minutes: 15
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
           REDIS_URL: ${{ secrets.REDIS_URL }}
