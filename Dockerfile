@@ -1,33 +1,33 @@
-# Stage 1: Build
-FROM node:18-alpine AS builder
+
+# Use official lightweight Node.js 18 alpine image
+
+
+FROM node:18-alpine
+
+# Set working directory
+
 WORKDIR /app
 
 # Install pnpm globally
+
+
 RUN npm install -g pnpm
 
-# Copy package.json and lockfile first for caching
+# Copy package.json and pnpm-lock.yaml (if exists) first for caching dependencies
 COPY package*.json pnpm-lock.yaml* ./
-
 # Install dependencies
 RUN pnpm install --frozen-lockfile
-
 # Copy all source code
 COPY . .
 
 # Build TypeScript project
+
 RUN pnpm run build
 
-# Stage 2: Production
-FROM node:18-alpine
-WORKDIR /app
+# Expose port your app listens on
 
-# Copy dist and node_modules from builder
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/.env ./
-
-# Expose port
 EXPOSE 5000
 
-# Start app
+# Start the app in production mode
+
 CMD ["pnpm", "run", "start"]
