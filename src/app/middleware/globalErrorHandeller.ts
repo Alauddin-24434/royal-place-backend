@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import multer from "multer";
 import { AppError } from "../error/appError";
 import { ErrorRequestHandler } from "express";
-import { logger } from "../utils/logger";
+
 import { envVariable } from "../config";
 
 const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
@@ -33,7 +33,7 @@ const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
     errorName = "BadRequest";
     message = `Invalid ${err.path}: "${err.value}"`;
   } else {
-    logger.error("🔥 Unexpected Error:", err);
+
     if (envVariable.NODE_ENV === "production") {
       message = "Internal Server Error";
     }

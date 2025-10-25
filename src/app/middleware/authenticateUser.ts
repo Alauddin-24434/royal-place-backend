@@ -1,8 +1,9 @@
 import jwt from "jsonwebtoken";
 import { AppError } from "../error/appError";
 import { envVariable } from "../config";
-import UserModel from "../modules/User/user.schema";
+
 import { catchAsyncHandeller } from "../utils/handeller/catchAsyncHandeller";
+import UserModel from "../mongoSchema/v1/userSchema/user.schema";
 
 interface JwtDecodedPayload {
   id: string;

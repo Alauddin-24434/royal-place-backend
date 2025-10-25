@@ -1,26 +1,27 @@
 import { Application } from "express";
-import { bookingRoute } from "../modules/Booking/booking.route";
-import { dashboardRoute } from "../modules/Dashboard/dashboard.route";
-import { paymentRoute } from "../modules/Payment/payment.route";
-import { roomRoute } from "../modules/Room/room.route";
-import { serviceRoute } from "../modules/Service/service.route";
-import { testimonialRoute } from "../modules/Testimonials/testimonial.route";
-import { userRoute } from "../modules/User/user.route";
+import { userRoute } from "../routes/v1/userRoutes/user.routes";
+import { roomRoute } from "../routes/v1/roomRoutes/room.routes";
+import { paymentRoute } from "../routes/v1/paymentRoutes/payment.route";
+import { serviceRoute } from "../routes/v1/amenitiRoutes/amenitie.routes";
+import { testimonialRoute } from "../routes/v1/testimonialRoutes/testimonial.routes";
+import { dashboardRoute } from "../routes/v1/dashboardRoutes/dashboard.routes";
+import { bookingRoute } from "../routes/v1/bookingRoutes/booking.routes";
 
-export const routes = [
-    { path: '/api/users', handler: userRoute },
-    { path: '/api/rooms', handler: roomRoute },
-    { path: '/api/bookings', handler: bookingRoute },
-    { path: '/api/payments', handler: paymentRoute },
-    { path: '/api/services', handler: serviceRoute },
-    { path: '/api/testimonials', handler: testimonialRoute },
-    { path: '/api/dashboards', handler: dashboardRoute },
-
+// All version 1 routes (without /api/v1 prefix)
+export const routesV1 = [
+  { path: '/users', handler: userRoute },
+  { path: '/rooms', handler: roomRoute },
+  { path: '/bookings', handler: bookingRoute },
+  { path: '/payments', handler: paymentRoute },
+  { path: '/services', handler: serviceRoute },
+  { path: '/testimonials', handler: testimonialRoute },
+  { path: '/dashboards', handler: dashboardRoute },
 ];
 
-
-export const initialRoute = (app: Application) => {
-    routes.forEach(route => {
-        app.use(route.path, route.handler);
-    });
+// Register main routes with common prefix
+export const mainRoutes = (app: Application) => {
+  const apiVersion = '/api/v1';
+  routesV1.forEach(route => {
+    app.use(`${apiVersion}${route.path}`, route.handler);
+  });
 };

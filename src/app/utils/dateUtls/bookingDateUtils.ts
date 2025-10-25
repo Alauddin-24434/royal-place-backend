@@ -1,4 +1,4 @@
-import { IBookingRooms } from "../../modules/Booking/booking.interface";
+import { IBookingRooms } from "../../interfaces/v1/bookingInterfaces/booking.interfcae";
 
 export function calculateDuration(rooms: IBookingRooms[]): number {
   if (!rooms || rooms.length === 0) return 0;

@@ -1,78 +1,56 @@
-import { Model, Document, PipelineStage } from "mongoose";
+// src/app/services/genericQuery.ts
+import { Model,PipelineStage } from "mongoose";
+import { sanitizeInput } from "../utils/sanitizeInput";
 
-export interface QueryOptions {
-  page?: number;
-  limit?: number;
+export interface GenericQueryOptions {
+  model: Model<any>;
+  query: Record<string, any>; // incoming query params
+  searchFields?: string[]; // fields for regex search
+  lookup?: PipelineStage.Lookup[]; // optional aggregate lookup
   sort?: Record<string, 1 | -1>;
   select?: string | Record<string, 1 | 0>;
-  search?: { fields: string[]; value: string };
-  filters?: Record<string, any>;
-  dateRange?: { field: string; start?: Date; end?: Date };
-  lookup?: PipelineStage.Lookup[];
 }
 
-/**
- * Convert select string "name email" to object { name: 1, email: 1 }
- */
-const buildProject = (select?: string | Record<string, 1 | 0>) => {
-  if (!select) return undefined;
-  if (typeof select === "string") {
-    return select
-      .split(" ")
-      .filter(Boolean)
-      .reduce((acc: Record<string, 1>, field) => {
-        acc[field] = 1;
-        return acc;
-      }, {});
-  }
-  return select;
-};
-
-/**
- * Universal query utility
- */
-export const universalQuery = async <T extends Document>(
-  model: Model<T>,
-  options: QueryOptions
-) => {
+export const genericQuery = async (options: GenericQueryOptions) => {
   const {
-    page = 1,
-    limit = 10,
+    model,
+    query,
+    searchFields = [],
+    lookup = [],
     sort = { createdAt: -1 },
     select,
-    search,
-    filters = {},
-    dateRange,
-    lookup = [],
   } = options;
 
+  // 1️⃣ Sanitize query
+  const sanitizedQuery = sanitizeInput(query) ?? {};
+
+  // 2️⃣ Build filters
+  const filters: Record<string, any> = {};
+  const page = Number(sanitizedQuery.page) || 1;
+  const limit = Number(sanitizedQuery.limit) || 10;
   const skip = (page - 1) * limit;
 
-  const match: Record<string, any> = { ...filters };
-
-  // Search term
-  if (search?.value && search.fields.length) {
-    match.$or = search.fields.map((field) => ({
-      [field]: { $regex: search.value, $options: "i" },
+  if (sanitizedQuery.searchTerm && searchFields.length) {
+    filters.$or = searchFields.map((field) => ({
+      [field]: { $regex: sanitizedQuery.searchTerm, $options: "i" },
     }));
   }
 
-  // Date range filter
-  if (dateRange?.field) {
-    const range: any = {};
-    if (dateRange.start) range.$gte = dateRange.start;
-    if (dateRange.end) range.$lte = dateRange.end;
-    if (Object.keys(range).length) match[dateRange.field] = range;
-  }
-
-  // Aggregation pipeline
-  const pipeline: PipelineStage[] = [{ $match: match }];
-
-  // Add lookups if any
+  // 3️⃣ Aggregation pipeline
+  const pipeline: PipelineStage[] = [{ $match: filters }];
   if (lookup.length) pipeline.push(...lookup);
 
-  // Pagination + total count using $facet
-  const projectStage = buildProject(select);
+  // Pagination + project
+  let projectStage: Record<string, 1> | undefined;
+  if (select) {
+    projectStage =
+      typeof select === "string"
+        ? select.split(" ").filter(Boolean).reduce((acc: any, f) => {
+            acc[f] = 1;
+            return acc;
+          }, {})
+        : select;
+  }
 
   pipeline.push({
     $facet: {
@@ -86,6 +64,7 @@ export const universalQuery = async <T extends Document>(
     },
   });
 
+  // 4️⃣ Query DB
   const result = await model.aggregate(pipeline);
 
   return {
