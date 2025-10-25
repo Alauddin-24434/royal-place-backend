@@ -1,44 +1,70 @@
 
-
 # 🏨 Royal Place — Hotel Management Backend API
 
-Welcome to the backend of **Royal Place**, a robust hotel management system built with **Express.js**, **TypeScript**, and **MongoDB**. This API powers essential features such as room booking, user management, payments, and more. **Redis** is now used for caching and session management, managed via Docker Compose.
+Welcome to the backend of **Royal Place**, a robust hotel management system built with **Express.js**, **TypeScript**, and **MongoDB**.
+This API powers essential features such as room booking, user management, payments, and more — now enhanced with **Redis caching and session management** via Docker Compose.
 
------
+---
+
+## 🧩 Tech Stack
+
+| Layer                     | Technology                                       |
+| :------------------------ | :----------------------------------------------- |
+| **Backend Framework**     | Express.js + TypeScript                          |
+| **Database**              | MongoDB (Mongoose ORM)                           |
+| **Cache / Session Store** | Redis                                            |
+| **Authentication**        | JWT (Access & Refresh Tokens)                    |
+| **Payment Gateway**       | AamarPay                                         |
+| **File Storage**          | Cloudinary                                       |
+| **Validation**            | Zod                                              |
+| **Logging**               | Winston + Morgan                                 |
+| **Security**              | Helmet, CORS, Mongo Sanitize, Express Rate Limit |
+| **Rate Limiting**         | express-rate-limit                               |
+| **Date Utilities**        | Day.js & Date-fns                                |
+| **Dev Tools**             | ts-node-dev, pnpm, Docker Compose                |
+
+---
 
 ## 🚀 Features
 
-  - **User Authentication & Role Management**
-  - **Room Booking System**
-  - **Stripe Payment Integration**
-  - **Hotel Amenities & Services**
-  - **Customer Testimonials**
-  - **Refund & Cancellation Prediction Endpoint**
-  - **Redis Caching & Session Management** (New)
+* 🔐 **User Authentication & Role Management**
+* 🏠 **Room Booking System**
+* 💳 **Aamarpay Payment Integration**
+* 🏖 **Hotel Amenities & Services**
+* 💬 **Customer Testimonials**
+* 🔄 **Refund & Cancellation Prediction Endpoint**
+* ⚡ **Redis Caching & Session Management** (New)
+* 🧱 **Zod Validation for Strong Input Schema**
+* 🔒 **Rate Limiting to Prevent Brute Force Attacks**
+* ☁️ **Cloudinary Integration for Image Uploads**
+* 🧩 **Docker-Ready Environment for Local & Production**
+* 📊 **Optimized Logging with Winston & Morgan**
 
------
+---
 
-## 🛠 Getting Started
+## 🛠️ Getting Started
 
-### 1\. Clone the Repository
+### 1️⃣ Clone the Repository
 
 ```bash
 git clone https://github.com/Alauddin-24434/royal-place-backend.git
 cd royal-place-backend
 ```
 
-### 2\. Install Dependencies
+### 2️⃣ Install Dependencies
 
-This project exclusively uses **pnpm** (recommended).
+This project **exclusively uses pnpm** (recommended for speed and workspace efficiency):
 
 ```bash
 pnpm install
 ```
------
+
+---
 
 ## 🔐 Environment Variables
 
-Create a `.env` file in the project root with the following keys. Note the new `REDIS_URI`.
+Create a `.env` file in the root directory and configure it with the following variables.
+Make sure to replace placeholders with your actual credentials.
 
 ```env
 # ----------------------
@@ -58,6 +84,12 @@ MONGO_URI=
 # Redis
 # ----------------------
 REDIS_URI=
+# ---------------------
+# Session Secret
+# ---------------------
+
+SESSION_SECRET=ebeae1d1e0fdda4d98a02afb45ae50dc216c721c9bd97a48c50a5092747fb265eba6e80a26fa1a7cac563dbb4b6e17c8a6f997efbb58c0a6871805503286f95c
+
 
 # ----------------------
 # JWT / Authentication
@@ -77,6 +109,7 @@ FAIL_URL=/api/payments/fail
 
 # ----------------------
 # ML / External APIs
+# ----------------------
 
 # ----------------------
 # Cloudinary Storage
@@ -86,85 +119,75 @@ CLOUDINARY_API_KEY=""
 CLOUDINARY_API_SECRET=""
 ```
 
------
+---
 
+## ⚙️ Running the Project
 
-## 🚀 Running the Project
+### 🧑‍💻 Local Development
 
-### Local Development
-
-For development without Docker, ensuring you have **MongoDB** and **Redis** running locally:
+Ensure **MongoDB** and **Redis** are running locally before starting:
 
 ```bash
 pnpm run dev
 ```
 
-### Production Build
+### 🏗️ Production Build
 
 ```bash
 pnpm run build && pnpm start
 ```
 
------
+---
 
-## 🐳 Dockerization with Docker Compose (Recommended)
+## 🐳 Dockerization (Recommended)
 
-This project uses **Docker Compose** to manage the application (`app`), **MongoDB** (`mongo`), and **Redis** (`redis`) services, making development and deployment easy and consistent.
+This project supports **Docker Compose** for seamless setup and deployment — automatically managing the following services:
 
-### 1\. Start the Services (App, MongoDB, and Redis)
+* `app` → Your Express + TypeScript API
+* `mongo` → MongoDB database
+* `redis` → Redis cache & session store
 
-Use the following command to build the image and start all services in the background:
+### ▶️ Start All Services
 
 ```bash
 docker compose up -d
 ```
 
-### 2\. View Service Logs
-
-To monitor the application's output and debug any issues, stream the logs from the `app` service:
+### 📜 View Logs
 
 ```bash
 docker compose logs -f app
 ```
 
-### 3\. Manage Redis
+---
 
-You can stop and restart individual services if needed.
+### 🔄 Managing Redis
 
-#### Stop the Redis Service:
+| Action            | Command                        |
+| :---------------- | :----------------------------- |
+| **Stop Redis**    | `docker compose stop redis`    |
+| **Restart Redis** | `docker compose restart redis` |
 
-To stop only the **Redis** container without affecting the application or database:
+---
 
-| Operating System | Command |
-| :--- | :--- |
-| **Ubuntu/Linux & macOS** | `docker compose stop redis` |
-| **Windows (PowerShell/CMD)** | `docker compose stop redis` |
-
-#### Restart the Redis Service:
-
-If you need to clear the Redis cache or restart the service:
-
-| Operating System | Command |
-| :--- | :--- |
-| **Ubuntu/Linux & macOS** | `docker compose restart redis` |
-| **Windows (PowerShell/CMD)** | `docker compose restart redis` |
-
-### 4\. Stop and Remove All Services
-
-When you're finished working, use this command to stop and remove all containers, networks, and volumes defined in the `docker-compose.yml` file:
+### 🧹 Stop and Remove All Services
 
 ```bash
 docker compose down
 ```
 
------
+---
 
 ## 🤝 Contributing
 
-Contributions are welcome\! Please open issues or submit pull requests for improvements and bug fixes.
+Contributions are always welcome! 🎉
+Please **open an issue** or **submit a pull request** with clear details on your improvements or bug fixes.
 
------
+---
 
 ## 📫 Contact
 
-For questions or support, please contact [alauddin150900@gmail.com].
+For questions, suggestions, or collaboration:
+📧 **Email:** [alauddin150900@gmail.com](mailto:alauddin150900@gmail.com)
+
+

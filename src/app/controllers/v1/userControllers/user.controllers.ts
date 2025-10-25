@@ -14,13 +14,16 @@ import {
   IUser,
 
 } from "../../../interfaces/v1/userInterfaces/user.interfaces";
+import { signupValidation } from "../../../zodValidations/v1/user.validations";
 
 // ================= Registration =====================
 // 1️⃣ Catch Async Handler
 const regestrationUser = catchAsyncHandeller(
   async (req: Request, res: Response) => {
 
-    const user = await userServices.registerUserIntoDb(req.body as IUser);
+    const validated= signupValidation.parse(req.body)
+
+    const user = await userServices.registerUserIntoDb(validated as IUser);
 
     const accessToken = createAccessToken({ id: user._id, role: user.role });
     const refreshToken = createRefreshToken({ id: user._id, role: user.role });
