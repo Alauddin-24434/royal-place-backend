@@ -12,6 +12,7 @@ async function server() {
     // Start Express app directly (no Socket.IO)
     app.listen(envVariable.PORT, () => {
       logger.info(`🚀 Hotel booking app listening on port ${envVariable.PORT}`);
+      
     });
   } catch (error) {
     logger.error("❌ Failed to connect to database", error);
