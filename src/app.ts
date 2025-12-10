@@ -3,7 +3,7 @@ import express, { Application, NextFunction, Request, Response } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import session from "express-session";
-import moragn from "morgan";
+import morgan from "morgan"; // moragn → fixed
 import { redisClient, connectRD } from "./app/config/redis";
 import { envVariable } from "./app/config";
 import { mainRoutes } from "./app/apiRoutes";
@@ -14,7 +14,8 @@ import rateLimiter from "./app/config/rateLimit";
 import { cookieOptions } from "./app/config/cookie";
 import { logger } from "./app/utils/logger";
 import { sanitizeMiddleware } from "./app/middleware/sanitizeMiddleware";
-
+import swaggerUi from "swagger-ui-express";
+import {  swaggerDoc} from "./app/config/swagger";
 // ==============================
 // App Configuration
 // ==============================
@@ -22,7 +23,6 @@ const app: Application = express();
 
 // -------------------------------
 // Rate limiter middleware
-// Protect API from too many requests (DDoS / brute-force)
 // -------------------------------
 app.use(rateLimiter);
 
@@ -34,30 +34,26 @@ app.use(helmet());
 
 // --------------------------------
 // Disable X-powered-by-header
-// Hide server info for security reason
 // ---------------------------------
-
 app.disable("x-powered-by");
 
 // -----------------------------------
-//  Morgan
+// Morgan for logging
 // -----------------------------------
-
 app.use(
-  moragn("combined", {
+  morgan("combined", {
     stream: { write: (message) => logger.info(message.trim()) },
   })
 );
 
 // ---------------------------------
-// Cors Setup
-// Allows requests from frontend domains with credentials
+// CORS Setup
 // ---------------------------------
 app.use(
   cors({
-    origin: true, // সব origin allow করে
+    origin: true,
     credentials: true,
-    allowedHeaders: "*", // সব headers allow করে
+    allowedHeaders: "*",
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   })
 );
@@ -65,41 +61,28 @@ app.use(
 // ------------------------------
 // Body Parsing & Cookie Parsing Middleware
 // -------------------------------
-
-// Parse cookies from incoming requests (req.cookies)
 app.use(cookieParser());
-
-// Parse incoming JSON payloads and make them available on req.body
 app.use(express.json());
-
-// Parse URL-encoded form data (e.g., form submissions)
-// 'extended: true' allows rich objects and arrays to be encoded
 app.use(express.urlencoded({ extended: true }));
 
-
 // ---------------------------------
-// 5️⃣ Sanitize Middleware — Prevent XSS & NoSQL Injection
+// Sanitize Middleware — Prevent XSS & NoSQL Injection
 // ---------------------------------
 app.use(sanitizeMiddleware);
-
 
 // -------------------------------
 // Redis Connect
 // -------------------------------
-connectRD().catch((err) => console.error("Redis connection failed", err));
+connectRD().catch((err) => console.error("Redis connection failed", err))
 
 // -------------------------------
 // Redis Session Store
 // -------------------------------
-const redisStore = new RedisStore({
-  client: redisClient,
-});
+const redisStore = new RedisStore({ client: redisClient });
 
 // ------------------------------
 // Express Session Middleware
 // ------------------------------
-// Store sessions in Redis for scalability
-
 app.use(
   session({
     store: redisStore,
@@ -111,8 +94,9 @@ app.use(
 );
 
 // ----------------------------------
-//   Root Route
+// Root Route
 // -----------------------------------
+
 app.get("/", (req: Request, res: Response) => {
   res.status(200).json({
     success: true,
@@ -120,13 +104,19 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
+
+// ----------------------------------
+// Swagger UI Setup
+// ----------------------------------
+swaggerDoc(app)
+
 // ---------------------------------
-// Main Api Routes
+// Main API Routes
 // ---------------------------------
 mainRoutes(app);
 
 // ---------------------------------
-// 404 Not Found Handler
+// 404 Not Found Handler (must be after all routes)
 // ---------------------------------
 app.use((req: Request, res: Response, next: NextFunction) => {
   res.status(404).json({
@@ -135,13 +125,9 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   });
 });
 
-// ---------------------
-// Sentry error handler
-// ---------------------
-
 // ---------------------------------
 // Global Error Handler
-// --------------------------------
+// ---------------------------------
 app.use(globalErrorHandler);
 
 // ------------------------------
